@@ -1,0 +1,19 @@
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Large and restricted datasets
+data/
+models/
+
+# Generated outputs
+logs/
+reports/
+experiments/
+
+# Temporary files
+*.partial
+*.joining
