@@ -1,3 +1,20 @@
+### Current real-acoustic results appendix — REAL_ACOUSTIC_RESULTS_APPENDIX_V2_2026_11_22
+
+Training-only existing South African station/run acoustic results have been independently inventoried and re-presented without retraining or examining hidden Zindi targets.
+
+- 6 stations, 460 unique sampled run entries and 25 frequency bands per station in the existing station spectral-shape report.
+- Tables, five figures and conditional run-bootstrap intervals: `reports/research_manuscript_v1/real_acoustic_results_v2/REAL_ACOUSTIC_RESULTS_APPENDIX.md`.
+- Draft PDF: `reports/research_manuscript_v1/real_acoustic_results_v2/REAL_ACOUSTIC_RESULTS_APPENDIX.pdf`.
+- Provenance and input SHA-256: `reports/research_manuscript_v1/real_acoustic_results_v2/manifest.json`.
+- No bootstrap interval for stations with fewer than 10 sampled recording runs; background run bootstrap is not deployment-independent.
+- Undefined `station_robust_z` entries are explicitly counted in `robust_z_availability.csv`; no undefined score is replaced by zero or treated as a valid observation.
+- **Limits:** Archive level units/reference and calibration are not verified. No natural-vessel annotations, hydrophone coordinates, spatial interpolation, or absolute sound-pressure claims are established.
+- Separate synthetic Experiments 005–007 and the model decision gate remain distinct from these descriptive acoustic figures; the source pool is historical development data.
+- Open evidence gates: exact local VTUAD release, public external-data declaration, verified sensor deployment positions, calibration, and natural-vessel attribution.
+
+Do not describe this appendix as a completed submission-ready vessel-activity map. Preserve the earlier Experiment 007 assessment without further tuning.
+
+
 # Current study status — after Experiment 007 (22 November 2026)
 
 Experiment 007 completed a prespecified training/calibration/assessment split **before** acoustic pairing, using only Experiment 004's training source pool. Source overlap and output hashes passed independent verification. The assessment documents improved synthetic share RMSE for the contrast-varied regressor but competing detector specificity/sensitivity trade-offs; no real-vessel generalization is established. The Experiment 007 assessment is frozen: do not select or retune a threshold using its results. Phase 3 remains preserved in the existing history of this checkpoint.

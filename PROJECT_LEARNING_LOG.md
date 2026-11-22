@@ -796,3 +796,19 @@ The contrast-varied regressor improved the prespecified internal assessment RMSE
 
 **Read-only decision-gate audit:** Output manifest present; all policy interpretations remain descriptive and no further model selection was performed. Verified gate source SHA256: `f40a18c0cc361ef3f8d4fb20797044dd1c12e421c4e2e4f0649ec3d0211309b4`.
 
+## Real-acoustic descriptive research appendix — REAL_ACOUSTIC_RESULTS_APPENDIX_V2_2026_11_22
+
+Training-only existing South African station/run acoustic results have been independently inventoried and re-presented without retraining or examining hidden Zindi targets.
+
+- 6 stations, 460 unique sampled run entries and 25 frequency bands per station in the existing station spectral-shape report.
+- Tables, five figures and conditional run-bootstrap intervals: `reports/research_manuscript_v1/real_acoustic_results_v2/REAL_ACOUSTIC_RESULTS_APPENDIX.md`.
+- Draft PDF: `reports/research_manuscript_v1/real_acoustic_results_v2/REAL_ACOUSTIC_RESULTS_APPENDIX.pdf`.
+- Provenance and input SHA-256: `reports/research_manuscript_v1/real_acoustic_results_v2/manifest.json`.
+- No bootstrap interval for stations with fewer than 10 sampled recording runs; background run bootstrap is not deployment-independent.
+- Undefined `station_robust_z` entries are explicitly counted in `robust_z_availability.csv`; no undefined score is replaced by zero or treated as a valid observation.
+- **Limits:** Archive level units/reference and calibration are not verified. No natural-vessel annotations, hydrophone coordinates, spatial interpolation, or absolute sound-pressure claims are established.
+- Separate synthetic Experiments 005–007 and the model decision gate remain distinct from these descriptive acoustic figures; the source pool is historical development data.
+- Open evidence gates: exact local VTUAD release, public external-data declaration, verified sensor deployment positions, calibration, and natural-vessel attribution.
+
+Do not describe this appendix as a completed submission-ready vessel-activity map. Preserve the earlier Experiment 007 assessment without further tuning.
+

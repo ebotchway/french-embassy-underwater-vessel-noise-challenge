@@ -163,7 +163,7 @@ def report(info,inv,cands,station_columns,g,station_validation):
  lines+=['','## Real acoustic presentation','',
  'The development station summaries may support *site-level descriptive distributions* after verifying their measurement convention and coverage. A non-geographic station plot is scientifically different from a georeferenced pressure/activity map.',
  f"Local descriptive station-summary columns: {station_columns if station_columns is not None else 'unavailable'}.",
- f"Station-source validation: {station_validation['detail']}", 
+ f"Station-source validation: {station_validation['detail']}",
  '','## Publication safeguards','',
  '- The candidate positions are never promoted to hydrophone locations automatically.',
  '- No geographically interpolated vessel heatmap is generated.',
