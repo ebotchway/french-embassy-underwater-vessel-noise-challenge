@@ -664,3 +664,24 @@ All six *point estimates* favored the original representation in the 48-pair stu
 7. Preserve the separate research submission deadline and requirements as organizer-dependent and reconfirm on the challenge page before submission.
 
 **Next formal checkpoint:** Experiment 004 protocol and genuinely held-out source evaluation. These Phase 3 results are recorded from terminal outputs supplied by the researcher, not from executions of the full dataset in this document-generation environment.
+
+## Acoustic-science checkpoint (ACOUSTIC_SCIENCE_CHECKPOINT_2026_11_22)
+
+This checkpoint consolidates the training-only real-acoustic evidence and the group-separated synthetic baselines. It is not independent evidence that natural vessel presence or calibrated sound pressure was recovered.
+
+**Development run coverage:** {'01_Richards_Bay': 120, '02_Durban': 1, '04_Bird_Island': 22, '05_St_Croix_Island': 77, '07_St_Francis': 120, '13_Saldhana_Bay': 120}.
+
+**Experiment 004 frozen synthetic evaluation:** original representation fraction RMSE 0.114430, detector ROC AUC 0.981296; submitted maximum-shift representation fraction RMSE 0.150893, detector ROC AUC 0.978653 (n=300). Training/evaluation runs and vessel hulls are group-separated for this new experiment but historically studied source pools are reused.
+
+**Provisional public leaderboard (Submission 001):** score 0.761535762, derived share RMSE approximately 0.238464, diagnostic AUC 0.517533. The private leaderboard determines final ranking; no hidden labels were available.
+
+**Real South African recordings:** 460 sampled development runs across six sites, one 15-minute window per run up to the station cap; 303 vessel-associated clips from 109 hulls. Levels are archive representations, not independently calibrated underwater pressure.
+
+**Spectral-shape comparison:** 66 station/class comparisons over 25 bands. Station median differences ranged from 7.477 dB (St Francis) to 26.202 dB (Durban, one sampled train run). These are separately peak-referenced shapes; no pressure, source-identification or vessel-detection inference is justified.
+
+**Controlled simulation realism:** training-only fixed-share source-spectrum sensitivity comparison completed; inspect `reports/audits/simulation_realism_v1/scenario_summary.csv` and the manuscript for measured changes.
+
+**Scientific report:** `reports/research_manuscript_v1/SCIENTIFIC_MANUSCRIPT_DRAFT.md` and `SUBMISSION_READINESS_CHECKLIST.md`. The draft requires verified citations, VTUAD external-data declaration, true station-coordinate provenance, coverage-aware relative acoustic mapping, and final PDF preparation.
+
+No frozen evaluation or sealed station holdout acoustic measurements were used to make the real-acoustic findings or tune the simulator. No additional public submission was generated.
+
