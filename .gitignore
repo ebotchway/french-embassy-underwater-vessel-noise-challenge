@@ -17,3 +17,9 @@ experiments/
 # Temporary files
 *.partial
 *.joining
+
+/experiment*_package/
+/finalization_package/
+/phase2_v2_package/
+/real_acoustic*_package/
+/research_phase2_package/
