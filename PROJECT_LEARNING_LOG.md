@@ -620,3 +620,47 @@ For a first CSV candidate, `scripts/prepare_zindi_first_submission.py` fits **on
 Write the research material in direct, natural language: explain what was measured, what we assumed, what we tested, what failed, and what is still unknown. Preserve figures, source provenance, methods and negative results. **No watermarks, decorative branding or hidden identifying overlays are added to these working files.** This is a plain Markdown log and a standard Jupyter notebook, not an assurance about third-party software or Zindi's own processing. Do not claim academic verification, authorship or physical calibration we cannot document. Keep all external-data licence and acknowledgement notices. Remove personal/local directory paths, access secrets, restricted data or source audio before sharing a public notebook. Organizers may require a polished PDF report; a technical notebook alone is not a substitute.
 
 **Current research position:** Our notebooks identified meaningful data constraints; later simulations reproduce meaningful performance variation, but have not shown their causes. We have a reproducible synthetic baseline, a defensible alignment-audit plan, and a path to a carefully verified first leaderboard candidate. The separate real-data research report still needs evidence and maps.
+
+
+---
+
+## 27. Phase 3 checkpoint — Submission 001, detection, and Experiment 003 (22 November 2026)
+
+### Public submission is provisional, not the final private ranking
+
+The submitted `reports/submissions/first_candidate.csv` passed schema checks and Zindi accepted and scored it. Submission ID: `pBUapzRu`; public leaderboard score: **0.761535762** (corresponding share RMSE ≈ **0.238464238** under `1 − RMSE`); public detection ROC AUC displayed: **0.517533333**; snapshot rank: **565**. Git baseline: `aaf4748`. The public result is **provisional** and must not be represented as the final private outcome. The public evaluation subset and private evaluation subset are different; this is not evidence of a known fixed-score rescaling. Public feedback must not be used to fit hidden-label targets.
+
+The submission copied the predicted share into `score_added_vessel` as an explicitly **uncalibrated, monotone proxy**; it did not train a dedicated classifier. No final private result is known.
+
+### Like-for-like detection audit (commit `ae6180a`)
+
+The exact submitted-model pipeline was recreated using the synthetic Experiment 002 training and validation partitions. It reproduced synthetic share RMSE **0.1664766801**, MAE **0.1175880686**, detection ROC AUC **0.9533855736**, and average precision **0.9851032280**, on **300 synthetic validation examples** (63 zero, 237 positive). Simple simulated missing-minute conditions yielded ROC AUC approximately **0.9375–0.9531**. These results are not directly comparable to hidden public scores as estimates of a single common data population; strong synthetic detection alongside near-chance public diagnostic discrimination is nevertheless a major warning about simulation validity and generalization.
+
+### Controlled matched robustness (Experiment 003; commits `8364ff9`, `8ebc480`, `e4e8a35`)
+
+An initial **12-pair pilot** was followed by the larger **48-pair development study** across six stations. Each pair generated 13 matched acoustic cases and six observation masks. There were **624 cases per mask per model**, **7,488 model predictions total**, but **only 48 matched pairs**, **36 background runs**, and **17 vessel-source clips**. Durban's eight pairs arose from **one** background run. Model A was the `submitted_max_shift` representation; model B was the original `synthetic_original` representation. Both were trained on already-used synthetic development data. Missing-minute target shares were recalculated **over observed time–frequency cells**, allowing an added event completely removed by the mask to have observed share zero.
+
+| Mask | Submitted RMSE | Original RMSE | Original RMSE advantage | Pair-cluster bootstrap 95% interval | Source-deletion reversal? |
+| --- | ---: | ---: | ---: | --- | --- |
+| Complete | 0.178687 | 0.127155 | +0.051532 | [+0.029706, +0.074096] | No |
+| First minute | 0.179602 | 0.164426 | +0.015177 | [−0.024927, +0.054621] | Yes, run/station |
+| Last minute | 0.189053 | 0.145173 | +0.043880 | [+0.015664, +0.072238] | No |
+| Middle minute | 0.178411 | 0.128725 | +0.049686 | [+0.027462, +0.072489] | No |
+| Both edges | 0.189394 | 0.180296 | +0.009098 | [−0.030646, +0.052150] | Yes, run/station/clip |
+| Three middle minutes | 0.173775 | 0.135991 | +0.037784 | [+0.006172, +0.066639] | No |
+
+All six *point estimates* favored the original representation in the 48-pair study, but only four pair-bootstrap intervals excluded zero. Deleting any one station, run, or vessel-source clip did not reverse the original representation's advantage for complete, last, middle, or three-middle missingness. For complete observations, the least favorable leave-one-station-out difference remained **+0.029771**. The first-minute and both-edge comparisons were source-sensitive and should not be described as robust. The 12-pair pilot sometimes favored the submitted representation, reinforcing sample-size caution.
+
+**Statistical limitations:** These are retrospective/development comparisons with source reuse and prior validation inspection; bootstrap clusters at matched-pair level do not make repeated recording runs, hulls or clips independent. Intervals are exploratory, not final confidence statements about competition performance. Changes in the observed zero/positive case mix across missingness scenarios also affect aggregate RMSE; lower RMSE under greater missingness does not necessarily mean a better detector.
+
+### Decisions and outstanding responsibilities
+
+1. **Freeze Submission 001 and Experiments 001–003**; do not overwrite predictions, manifests, model assumptions, scripts or previous notebook outputs.
+2. Treat per-window maximum shift as an **unproven representation choice**; preserve both representations for a *newly specified*, source-independent Experiment 004. Do not select a leaderboard candidate from this development comparison alone.
+3. Make **background-run, vessel-hull/clip and station/session independence** explicit in Experiment 004 design. Pre-register comparisons and include station holdouts; check feasible sample sizes before claiming validation power.
+4. Separate observed-cell share regression (RMSE) from controlled-addition detection (ROC AUC/AP). Include true background-only controls, realistic event duration, and whole-minute masks, with physically defensible uncertainty rather than absolute pressure claims.
+5. **External-data declaration remains a draft** (`VTUAD_EXTERNAL_DATA_DECLARATION_DRAFT.md`); verify the exact release and licence and post the source/version/access declaration to Zindi. Do not silently replace v1.3.0 candidate inputs with a reportedly newer release.
+6. Continue the **separate real South African acoustic research track**, producing coverage-aware relative acoustic activity maps and uncertainty analyses. The existing work has not established absolute physical calibration or ground-truth natural-vessel labels.
+7. Preserve the separate research submission deadline and requirements as organizer-dependent and reconfirm on the challenge page before submission.
+
+**Next formal checkpoint:** Experiment 004 protocol and genuinely held-out source evaluation. These Phase 3 results are recorded from terminal outputs supplied by the researcher, not from executions of the full dataset in this document-generation environment.
