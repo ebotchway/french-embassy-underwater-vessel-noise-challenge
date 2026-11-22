@@ -19,3 +19,16 @@ I am declaring the external acoustic dataset used for my first exploratory submi
 ---
 
 **Pre-post checks:** (1) Check the local `data/external/vtuad/metadata/dataset_card.md` and actual download record for the precise version. (2) Verify the release DOI and author/attribution details displayed on Zenodo. (3) Confirm the posted source has equal access and license approval as required by Zindi. (4) Replace any incorrect release description before posting. (5) Record the public discussion URL after posting.
+
+
+### VTUAD Archive and Metadata Classification Reconciliation
+
+The retained VTUAD strict-interval audio archives contain 525 WAV files: 509 files in the original vessel directory and 16 in the original background directory. Both ZIP archives passed internal integrity checks, and the retained background archive matched the published MD5 checksum.
+
+The processed source manifest contains 525 unique clip identifiers, with all corresponding WAV files present. Metadata classification identifies 487 non-background clips and 38 background-labelled clips. The difference arises because 22 recordings located in the original vessel directory carry a background metadata label.
+
+All 38 metadata-background clips are assigned to the background-reference allocation. The remaining 487 non-background clips are distributed into 410 training and 77 validation clips.
+
+Directory placement, metadata classification and experimental allocation are treated as distinct attributes. No metadata labels were changed to force agreement between the archive directories and processed classifications.
+
+These findings establish consistency of the local file inventory and processing manifest. They do not independently confirm physically isolated vessel signals or establish the provenance of every publisher-side metadata annotation. The retained vessel archive still requires comparison against an authenticated publisher asset checksum.
