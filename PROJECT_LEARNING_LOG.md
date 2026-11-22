@@ -1,8 +1,10 @@
 # Underwater Vessel Noise Challenge — What We Have Learned So Far
 
-**Project:** French Embassy Underwater Vessel Noise Challenge (Zindi)  
-**Updated:** 22 November 2026  
-**Status:** Data checks and source splits are ready. We have tested one audio feature extractor. We have **not** trained or evaluated a prediction model yet.
+**Project:** French Embassy Underwater Vessel Noise Challenge (Zindi) 
+
+**Updated:** 22 November 2026 
+
+**Status:** Background and vessel data checks, class-aware source splitting, 1,892 minute-level vessel features, synthetic-mixture generation, and first model experiments are complete. The best exploratory feature experiment reached an RMSE of 0.119687 on 80 synthetic validation examples. We have not yet measured performance on the competition’s hidden labels.
 
 ## Why we wrote this document
 
@@ -21,12 +23,19 @@ The hidden test examples are for prediction only. We do not use their values to 
 ### A few words we use
 
 - **Frequency band:** A small range of sound frequencies. Low bands often contain deeper sounds; high bands contain higher-pitched sounds.
+
 - **Acoustic energy:** A measure of sound power. It is not the same as a sound level written in decibels.
+
 - **Decibel (dB):** A way of expressing a ratio on a logarithmic scale. We must convert compatible levels to linear energy before adding them.
+
 - **Training:** The examples a model learns from.
+
 - **Validation:** Separate examples used to check whether what the model learned works on data it did not see during training.
+
 - **Leakage:** When information from validation or test examples accidentally helps the model during training. Leakage can make a model look better than it really is.
+
 - **Holdout:** Data kept apart for a later, harder test.
+
 - **Manifest:** A file that records which source examples belong to which group.
 
 ## 2. What data do we have?
@@ -37,7 +46,7 @@ The challenge test file contains 1,500 rows with 25 frequency bands measured ove
 
 ### B. South African underwater sound archive
 
-We checked acoustic data from 10 monitoring stations. Together they contain **1,715,779 one-minute records**. The original files have 62 `TOL_` frequency-band columns. All 25 bands needed for this competition were present and had finite values in the files we inspected.
+We checked acoustic data from 10 monitoring stations. Together they contain **1,715,779 one-minute records**. The original files have 62 `TOL\_` frequency-band columns. All 25 bands needed for this competition were present and had finite values in the files we inspected.
 
 We checked basic data quality: whether the expected 25 bands were present and finite, whether minute durations were near one minute, and whether the spectrum had enough variation. Some records did not meet every quality rule, so we did not blindly treat all records as equally suitable. We have not yet confirmed the full calibration history or exact acoustic measurement convention of these files.
 
@@ -52,10 +61,15 @@ The index is at `reports/eda/background_window_index.csv`. Its entries point bac
 We downloaded and extracted the VTUAD strict-interval WAV audio and its supporting metadata.
 
 - **525 WAV files** in total.
+
 - **509 files** stored in the `vessel/` archive folder.
+
 - **16 files** stored in the `background/` archive folder.
+
 - Every WAV is **mono**, sampled at **32,000 samples per second**, and stored as **16-bit PCM**.
+
 - Vessel-folder files have a median duration of about **3 minutes**; background-folder files have a median duration of about **33 minutes**.
+
 - All **525 files passed SHA-256 checks** against the publisher's per-file checksum list. No files were missing from the metadata-to-WAV mapping.
 
 These checks tell us that the local copies match the publisher's files. They do **not** prove that every recording is correctly labelled, free of background noise, or calibrated as a pressure measurement.
@@ -83,11 +97,17 @@ Instead, we used **time-based separation**. We also kept **Fish Hoek** and **Sea
 ### The final background split (version 2)
 
 | Group | 15-minute windows | What it is for |
+
 |---|---:|---|
+
 | Training | 67,463 | Learn patterns from background data |
+
 | Validation | 16,946 | Check performance on later background periods |
+
 | Excluded | 3,193 | Preserve time gaps and whole-run separation |
+
 | Station holdout | 541 | Later test on Fish Hoek and Sea Point |
+
 | **Total** | **88,143** | Every indexed window is accounted for |
 
 The file is `reports/eda/background_split_manifest_v2.csv`.
@@ -95,9 +115,13 @@ The file is `reports/eda/background_split_manifest_v2.csv`.
 We originally had a small split problem: four continuous recording runs crossed a boundary between an active group and the excluded group. We investigated the exact runs rather than ignoring the failed check. We changed the assignments, including putting Durban's later complete recording run into validation. After that:
 
 - Every indexed continuous recording run belongs to just one split group.
+
 - All six development stations have training and validation windows.
+
 - The train-to-validation time gaps are **9 to about 49 days**, depending on the station. Every checked station exceeded our seven-day minimum.
+
 - The two station holdouts remained separate.
+
 - The total number of windows stayed at 88,143.
 
 **Important limit:** This is a strong first split, but separate recording runs can still share a recorder deployment or environmental conditions. We must not describe the validation data as perfectly independent.
@@ -109,8 +133,11 @@ The first version was preserved. We should turn the final background split logic
 We inspected the dataset card and these tables:
 
 - `metadata.csv`: recording IDs, paths, labels, timestamps, MMSI and other information.
+
 - `registry_anonymized.csv`: anonymized `hull_id` values for vessel identity.
+
 - `clip_acoustic_stats.csv`: summary sound measurements and the publisher's original split.
+
 - `manifest_val.csv`: short overlapping segments cut from recordings.
 
 All three clip-level metadata tables have **525 rows and 525 unique clip IDs**. The validation-segment file has **20,479 segments** drawn from **80 source clips**. Some segments overlap. We will not randomly split such segments, because nearly identical audio could appear on both sides.
@@ -122,6 +149,7 @@ There are **38 recordings labelled `background`**, but only **16 WAVs in the `ba
 So we decided to use the metadata label, not just the folder name, when choosing candidate vessel audio:
 
 - **487 recordings** have a non-background class label and are eligible to be considered vessel-source recordings.
+
 - **38 background-labelled recordings** are held aside as background references.
 
 We are **not** saying that the 487 clips contain vessel sound alone, or that the 38 references contain absolutely no vessel sound. These are practical labels with known uncertainty.
@@ -147,10 +175,15 @@ That may be acceptable for the publisher's own recording-level classification go
 We created `scripts/build_vtuad_source_splits.py` and ran it successfully. We used a fixed random seed of **42** and split by **whole hull identities**, not individual WAV files.
 
 | Group | Clips | Distinct hulls |
+
 |---|---:|---:|
+
 | Training | 407 | 137 |
+
 | Validation | 80 | 35 |
+
 | Background reference | 38 | Not part of the vessel-source split |
+
 | **Total** | **525** | |
 
 **Known hulls shared between train and validation: zero.** There were no eligible recordings reported under `unknown_identity` in this run. The script passed its checks.
@@ -159,7 +192,7 @@ The result is `reports/eda/vtuad_source_split_v1.csv`. The script was committed 
 
 ### Important warning: The split is not balanced across vessel types
 
-We should not ignore this just because the split passed its identity checks. In validation, there are no clips from **dredger, other, passenger ship, pilot vessel, rescue or sailing**. In training, there are **no dredger clips**, even though validation has eight. Other types, including tanker, have only a few examples.
+We should not ignore this just because the split passed its identity checks. In validation, there are no clips from **other, passenger ship, pilot vessel, rescue or sailing**. In training, there are **no dredger clips**, even though validation has eight. Other types, including tanker, have only a few examples.
 
 This means version 1 is useful for a first **unseen-hull test**, but it is **not a balanced test of all vessel classes**. A low or high validation error could partly reflect class differences rather than only generalization to new hulls.
 
@@ -179,7 +212,7 @@ We also checked the calculation against a **known 1,000 Hz sine wave** with ampl
 
 A further practical lesson: after restarting a terminal, we must activate our project's Python environment with `source .venv/bin/activate`. Otherwise, `python` or installed packages may not be found.
 
-## 7. Why we cannot directly mix the two datasets yet
+## 7. Why mixing the two datasets requires care
 
 The South African archive contains **acoustic levels**, while the WAV extractor currently produces **relative digital signal power**. These are not automatically the same physical units.
 
@@ -189,85 +222,169 @@ We will not add numbers written in decibels as though they were ordinary energy 
 
 Many vessel recordings are only two or three minutes long. We must not repeatedly loop one short clip to fill 15 minutes without explaining and testing the unrealistic patterns that creates. A realistic experiment may instead add a shorter event into part of a 15-minute window.
 
-We also need to check the competition's exact definition of `share_added_vessel` and `score_added_vessel` before producing target labels.
+We used a stated energy-fraction formula for our controlled synthetic experiment and verified its arithmetic. Before any final submission, we must confirm the latest official competition rules, both target fields and the submission format.
 
 ## 8. How we are protecting the competition experiment
 
 We have made these choices to keep our results believable:
 
-1. **Keep hidden test data for inference.** Do not use it to train, tune or generate labels.
-2. **Use real 15-minute background windows.** Do not invent missing minutes.
-3. **Keep nearby background recordings apart in time.** Use our version 2 chronological split and preserve the station holdouts.
-4. **Keep known vessel identities apart.** Use a hull-grouped source split instead of randomly splitting overlapping clips.
-5. **Do not confuse filenames and labels.** The `vessel/` archive contains 22 recordings labelled background.
-6. **Use actual WAV durations.** Some metadata durations do not match.
-7. **Check file integrity.** All 525 VTUAD WAV files matched their checksum list.
-8. **Call assumptions what they are.** A successful synthetic tone test does not establish acoustic calibration.
-9. **Keep source credit and experiment records.** External data, licences, processing settings, random seeds and final code should be documented.
-10. **Judge model quality on separate data.** We need overall RMSE, per-station results, source-group checks and class-coverage warnings, not just one attractive number.
+1\. **Keep hidden test data for inference.** Do not use it to train, tune or generate labels.
+
+2\. **Use real 15-minute background windows.** Do not invent missing minutes.
+
+3\. **Keep nearby background recordings apart in time.** Use our version 2 chronological split and preserve the station holdouts.
+
+4\. **Keep known vessel identities apart.** Use a hull-grouped source split instead of randomly splitting overlapping clips.
+
+5\. **Do not confuse filenames and labels.** The `vessel/` archive contains 22 recordings labelled background.
+
+6\. **Use actual WAV durations.** Some metadata durations do not match.
+
+7\. **Check file integrity.** All 525 VTUAD WAV files matched their checksum list.
+
+8\. **Call assumptions what they are.** A successful synthetic tone test does not establish acoustic calibration.
+
+9\. **Keep source credit and experiment records.** External data, licences, processing settings, random seeds and final code should be documented.
+
+10\. **Judge model quality on separate data.** We need overall RMSE, per-station results, source-group checks and class-coverage warnings, not just one attractive number.
 
 ## 9. Current project files
 
 These are the paths that have been established during our work. Paths under `reports/` are local generated outputs and are currently excluded from Git.
 
 | Path | Purpose |
+
 |---|---|
+
 | `scripts/audit_underwater_challenge.py` | Earlier dataset audit |
+
 | `scripts/build_background_window_index.py` | Build a list of complete 15-minute background windows |
+
 | `scripts/validate_background_windows.py` | Test whether indexed windows can be retrieved correctly |
+
 | `notebooks/01_south_african_acoustic_eda.ipynb` | Explore South African sound data |
+
 | `reports/eda/background_window_index.csv` | Indexed 15-minute background windows |
+
 | `reports/eda/background_split_manifest.csv` | Original background split; kept for history |
+
 | `reports/eda/background_split_manifest_v2.csv` | Corrected and validated background split |
+
 | `reports/eda/vtuad_metadata_reconciliation.csv` | Match 525 metadata records to 525 WAV files |
+
 | `scripts/build_vtuad_source_splits.py` | Make source splits by hull identity |
+| `scripts/extract_vtuad_band_features.py` | Turn eligible WAV clips into relative 25-band minute features |
+| `reports/eda/vtuad_minute_band_power_v1.csv` | Complete set of 1,892 minute-level features |
+
 | `reports/eda/vtuad_source_split_v1.csv` | First hull-separated source manifest |
+
 | `data/external/vtuad/metadata/dataset_card.md` | Publisher information and limitations |
+
 | `data/external/vtuad/metadata/strict_interval_wav_SHA256SUMS.txt` | Published WAV checksums |
 
-The first 25-band audio extractor and synthetic tone test have so far been run as terminal experiments. **They are not yet saved as a reusable tested project module.**
+The 25-band extractor is saved as `scripts/extract_vtuad_band_features.py`. It has passed a 1 kHz tone test, a broadband-noise test, a three-clip smoke test and a complete 487-clip extraction. Frequency-boundary tests and physical calibration are still outstanding.
 
 ## 10. What has been completed and what is still open?
 
 | Work | Status |
+
 |---|---|
+
 | Explore South African acoustic archive | Completed initial audit |
+
 | Index complete 15-minute background windows | Completed |
+
 | Retrieve and check example windows | Passed sample check |
+
 | Create background split with time gaps | Version 2 passed |
+
 | Check VTUAD audio headers | Completed |
+
 | Verify VTUAD WAV SHA-256 checksums | All 525 passed |
+
 | Reconcile metadata to WAV files | All 525 mapped |
+
 | Inspect source identity overlap | Completed initial audit |
-| Create hull-separated vessel split | Version 1 passed |
-| Test real WAV to 25 bands | One file passed |
+
+| Create hull-separated vessel split | Versions 1 and class-aware 2 passed |
+
+| Test real WAV to 25 bands | 487 files processed; full feature audit passed |
+
 | Test 1 kHz tone | Passed |
-| Check class balance in vessel split | Issue identified; needs improvement |
-| Test broadband noise and band edges | Not done |
-| Confirm acoustic calibration and mixing rule | Not done |
-| Confirm exact target formula and final rules | Not yet rechecked |
-| Build reusable vessel feature extractor | Not done |
-| Build controlled synthetic training examples | Not done |
-| Train and evaluate a baseline model | Not done |
+
+| Check class balance in vessel split | Class-aware version 2 covers nine of eleven classes in both groups |
+
+| Test broadband noise | Passed first white-noise coverage test |
+| Test band-edge behaviour | Not done |
+
+| Confirm acoustic calibration and mixing rule | Controlled relative-energy simulation validated; physical calibration remains unverified |
+
+| Confirm exact target formula and final rules | Synthetic energy-fraction arithmetic verified; final official rules and diagnostic field still need confirmation |
+
+| Build reusable vessel feature extractor | Script created and full extraction passed; further tests needed |
+
+| Build controlled synthetic training examples | 200 train and 80 validation examples generated; self-test passed |
+
+| Train and evaluate a baseline model | Three baseline models trained; Random Forest RMSE 0.197845 on synthetic validation |
+
 | Produce a Zindi submission | Not done |
+
+### Completed: Full VTUAD acoustic feature extraction
+
+We successfully converted all 487 eligible vessel recordings into 1,892 one-minute acoustic observations. Each observation contains measurements for the same 25 frequency bands used in the Zindi competition.
+
+Before doing this, we tested our calculation with a known 1,000 Hz sound and with broadband noise. Both tests passed. We also tested three real recordings before processing the complete dataset.
+
+We kept the original recording identifiers, vessel identities and training or validation assignments so that we can trace each measurement back to its source.
+
+These measurements represent relative digital sound power, not calibrated underwater sound-pressure levels. We must account for this difference when combining vessel recordings with South African background measurements.
+
+The full feature dataset passed its structural audit. Since then, we created a class-aware source split, tested simulated mixtures, and trained baseline models. Band-edge processing and physical calibration still need investigation.
+
+### Completed: Full feature audit (22 November 2026)
+
+We checked the extracted feature file, `reports/eda/vtuad_minute_band_power_v1.csv`, without loading the WAV recordings again. **All checks passed.**
+
+| Check | Result |
+|---|---:|
+| Eligible recordings | 487 |
+| One-minute records | 1,892 |
+| Training records | 1,560 |
+| Validation records | 332 |
+| Training hulls | 137 |
+| Validation hulls | 35 |
+| Hulls in both train and validation | 0 |
+| Missing or negative band-power values | 0 |
+| Zero-power minutes | 0 |
+| Very-low-power minutes below 1e-12 | 0 |
+
+We confirmed that each minute has 25 finite, nonnegative band-power readings, that all minute numbers are unique and consecutive within each clip, and that total power agrees with the sum of the 25 bands. Every record keeps the correct training or validation assignment.
+
+The broadband test measured about **0.5568** of total white-noise power inside our band range, compared with an expected **0.5555**. The 1,000 Hz tone test also passed.
+
+**A warning we must keep:** Some vessel types are missing from validation, while all dredger clips are in validation and none are in training. This can make a model look better or worse for reasons unrelated to general acoustic prediction. We should preserve this first split and create a separate class-aware, hull-isolated comparison.
+
+The median band-power sum is about **3.00e-7** in training and **3.23e-7** in validation. There are some much louder minutes in both groups. These values are **relative digital powers**, not calibrated sound levels, so they must not be added directly to the South African decibel values.
+
+**Decision:** The extraction dataset passed the technical tests. We proceeded with explicitly simulated, relative-energy labels rather than claiming absolute underwater pressure calibration.
 
 ## 11. What we should do next, in order
 
-### Next: make the vessel split more useful
+### Next: design a stronger second simulation experiment
 
-Review the current split's missing vessel classes. Create a **class-aware, hull-grouped candidate split** without sharing a hull across train and validation. Compare it against version 1 rather than overwriting version 1. Record how many hulls and clips of each type are in each group. Some rare classes may be impossible to represent well on both sides; report that honestly.
+We already created the class-aware hull split v2 and trained first models. We should now build a new, more varied relative-energy simulation using continuous target fractions, realistic event lengths and insertion positions, better station coverage and independent validation examples. Preserve all older outputs rather than overwriting them.
 
 ### Then: turn audio tests into code
 
-Write a reusable 25-band extraction script with automatic tests for a known tone, broadband noise, frequencies near the edges of bands and conservation of power over the frequency range being measured. Use the exact band order required by the challenge. Test small samples first. Do not process hundreds of WAV files until the tests pass.
+The reusable extraction script is already in place and has processed the 487 eligible clips. Next, test frequencies at band boundaries, check our integration assumptions and verify the 25-band order against the official challenge schema. Preserve the existing output as version 1.
 
-### Then: define a defensible synthetic experiment
+### Then: test how well our results generalize
 
-Read the official competition target definition carefully. Decide how to represent vessel-added energy when the vessel WAV itself contains ambient noise. Make all assumptions visible. Keep synthetic sources from the validation hulls separate from training sources, and background validation windows separate from training windows.
+The first controlled simulation already works. Next, assess the new experiment on fresh examples, evaluate errors by source class and station, check the influence of ambient sound in vessel clips and record all scaling assumptions.
 
-### Then: train the simplest useful model first
+### Then: compare models without overusing one validation set
 
-Start with an understandable baseline, compute RMSE on the synthetic validation set, and break down errors by station and vessel type where there is enough data. Only then try stronger models. Keep the station holdouts for a final stress test, not for endless tuning.
+A constant, Ridge regression and Random Forest have already been tested. The combined feature idea is promising but was chosen after looking at the same 80 validation examples. Preselect it for the next experiment, and assess it on new data before making strong claims. Keep Fish Hoek and Sea Point held out for a later stress test.
 
 ### Before any submission
 
@@ -275,16 +392,128 @@ Check the current rules, external-data requirements, target formula, submission 
 
 ## 12. Things we must remember
 
-- We have **good data preparation**, not a winning model yet.
+- We have **good data preparation and first synthetic model results**, not a proven competition model yet.
+
 - A passing program check tells us the program did what we asked. It does not always tell us our scientific assumptions are right.
+
 - Source independence is more important than an easy random split.
-- The current vessel split is hull-separated but **not class-balanced**.
+
+- The class-aware vessel split v2 keeps hulls separate and represents nine vessel classes in both groups; dredger and pilot vessel each have only one known hull.
+
 - A background label does not guarantee silence or pure background.
+
 - A vessel label does not mean the waveform contains only vessel sound.
+
 - Correct checksums do not guarantee correct labels or acoustic calibration.
+
 - We must keep the original sources and our generated reports distinct.
+
 - We should keep this file updated whenever we make a major decision, discover a problem, or finish a new experiment.
+
+
+## 13. Better vessel splits and complete acoustic features
+
+After discovering that the first hull-based split did not represent every vessel type well, we created a second split using **whole vessel identities within each class**. We never split recordings from the same known hull across training and validation.
+
+The second split has **410 training clips from 137 hulls**, **77 validation clips from 35 different hulls**, and **38 background-labelled reference clips**. Nine vessel classes appear in both training and validation. Dredger and pilot vessel each have only one known hull, so they remain training-only. There are **zero shared hulls** across our two active groups.
+
+We saved the split as `reports/eda/vtuad_source_split_v2.csv`. Its recorded SHA-256 hash was `3dc2a46b59b1d02d09f5d3685cf007088de75c896ee5384bb8ee5e6d4fd8bf24`.
+
+We did **not** need to repeat the original WAV extraction. We joined the new split to the already calculated acoustic features by `clip_uid` without changing any sound measurements. The new feature report has **1,530 training minutes and 362 validation minutes**, making **1,892 minutes from 487 recordings** in total. The file is `reports/eda/vtuad_minute_band_power_split_v2.csv`; its recorded SHA-256 hash was `9971330ba17fbee8f502c2482efe82488e7feb78bc88574f7961faf0647e2401`.
+
+**Why we did this:** We want to check predictions on vessels the model did not encounter during training, and we want wider class coverage. These checks reduce some forms of leakage; they do not guarantee that different recordings never shared an environmental event.
+
+We committed the feature extractor, v2 source split and split-linking script in Git commit `b5b6a99`. We also updated the research notebook in commit `cbc7d11`.
+
+## 14. Our first real-background synthetic-mixture experiment
+
+We wrote `scripts/build_synthetic_mixtures_v1.py` to combine real South African 15-minute background profiles with shorter, scaled vessel-shaped profiles from VTUAD. We used *relative linear energy* for addition, then saved log-level inputs for modelling. These are controlled simulations, not claims that we reconstructed physically calibrated vessel sound.
+
+The simulation uses this simple rule: **mixture energy = background energy + scaled added-template energy**. The simulated target is the added part divided by the total mixture energy, summed over the 15 minutes and 25 frequency bands.
+
+We checked the arithmetic for desired fractions of **0%, 5%, 20%, 50% and 80%**. Every fraction was recovered to numerical precision. We then ran a **24-training / 12-validation smoke test** and a larger run of **200 training / 80 validation examples**. Both passed the generator's self-test and the resulting arrays had shapes `(200, 15, 25)` and `(80, 15, 25)`.
+
+The larger dataset is saved in `reports/eda/synthetic_v1/`, with `train.npz`, `validation.npz`, and matching provenance CSV files. The files contain an input array called `X` and the simulated fraction `y`. **`X` contains logarithmic sound-level values, which may be negative**; this is normal and does not mean negative physical energy.
+
+We checked that the training and validation examples did not share indexed background run IDs, VTUAD clip IDs, or hull IDs. We also kept Fish Hoek and Sea Point separate for a later station test.
+
+**Limit:** The vessel recordings may include ambient noise, and choosing a target fraction to determine the scale can create easier patterns than naturally recorded vessel contributions. We must never confuse our simulated RMSE with the Zindi hidden-test RMSE.
+
+## 15. The first three models and what they achieved
+
+We trained our first models with **200 simulated training examples** and assessed them on **80 simulated validation examples**. The models received only the 15 × 25 acoustic input values, not the true target or vessel identity.
+
+| Model | Validation RMSE | Validation MAE |
+|---|---:|---:|
+| Constant prediction (training average) | 0.249648 | 0.217644 |
+| Ridge regression | 0.266875 | 0.218580 |
+| Random Forest, 200 trees | **0.197845** | **0.159288** |
+
+RMSE means *root mean squared error*. Lower is better. The first Random Forest reduced RMSE by about **20.8%** compared with the constant prediction. Ridge did not beat the constant baseline.
+
+The Random Forest still made important mistakes. When the true simulated added share was **0%**, its average prediction was **19.04%**. At a true **70%**, the average prediction was only **43.47%**. In simple terms, it predicted too much vessel contribution when there was none, and too little when vessel contribution was large.
+
+Errors also differed across stations. Richards Bay had 46 of the 80 validation examples, while St Francis had only two. We therefore cannot treat every per-station error as equally reliable.
+
+The first model reports are under `reports/baselines/synthetic_v1/`. At the time of this update, we have **no official leaderboard result** from these models.
+
+## 16. We checked whether the initial improvement was meaningful
+
+We compared the Random Forest and constant predictions on the same 80 simulated examples. The Random Forest improved RMSE by **0.051803**. A paired bootstrap gave a 95% interval from **0.020786 to 0.083729** for the improvement. In 99.94% of bootstrap resamples, the Random Forest was better.
+
+We also shuffled target assignments *within each station* while keeping predictions unchanged. The median shuffled RMSE was **0.290046**, compared with the original Random Forest RMSE of **0.197845**. The permutation p-value was **0.00020**.
+
+**What we learned:** The model's predictions are meaningfully associated with the correct synthetic targets, beyond simple station membership in this test. **What we did not learn:** These tests cannot prove that the model recognizes real vessel sound in unseen conditions. Related observations can also make bootstrap uncertainty look smaller than it truly is.
+
+## 17. We found that simpler acoustic summaries work much better
+
+We next compared different ways of describing the same 15-minute acoustic window. We used the *same 200 training and 80 validation examples*, so this was an exploratory comparison, not a new independent test.
+
+| Feature description | Number of features | Synthetic validation RMSE |
+|---|---:|---:|
+| Raw minute-by-band input | 375 | 0.196201 |
+| Four overall sound statistics | 4 | 0.196340 |
+| Average and variation within each frequency band | 50 | 0.147325 |
+| Changes between neighbouring minutes | 42 | 0.208288 |
+| **Combined global, spectral and temporal summaries** | **96** | **0.119687** |
+
+**Why the combined representation matters:** It includes the overall sound level, how sound is spread across frequency bands, and how it changes with time. Those pieces provide more useful information together than on their own in this experiment.
+
+The combined representation lowered exploratory RMSE by about **39.5%** compared with our earlier Random Forest result of 0.197845. But we tried several alternatives and then selected the best one using the **same 80 validation examples**. Therefore, the 0.119687 score may be optimistic. We must confirm the advantage on fresh, separate examples.
+
+**Decision:** Use the 96-feature combined representation as one *preselected candidate* for Synthetic Experiment 002. Do not claim that it is a proven winning model.
+
+## 18. What the latest generator inspection taught us
+
+Before changing the simulation, we checked the command-line options of `scripts/build_synthetic_mixtures_v1.py`. It currently supports `--train`, `--validation`, `--seed` and `--self-test`. It does not yet expose controls for event-duration distributions, continuous target distributions or station balancing.
+
+We also opened the provenance CSV files. The training report has **200 rows**, and validation has **80 rows**. Each row records:
+
+- The example number, data partition and background monitoring station.
+- The background recording run, window start and original Parquet source.
+- The vessel clip ID, hull identity and vessel class when an addition was made.
+- How many vessel minutes were used, where we started within the clip and where we inserted them into the 15-minute window.
+- The requested share, recovered share and relative scale applied to the template.
+
+A background-only example has no vessel ID, a duration of zero and an added share of zero. This is expected, not missing data requiring a replacement value.
+
+The preview included vessel additions lasting **2, 3, 4 and 14 minutes** and different insertion positions. This demonstrates the structure of those sampled examples; it does not establish the complete event-duration distribution. We should calculate that distribution from the full provenance tables before deciding how to redesign it.
+
+**Why we inspected this:** We want Experiment 002 to reuse the known-good parts of our generator, maintain source separation, and change the simulation rules deliberately rather than guessing how the old generator works.
+
+## 19. Our next work: Synthetic Experiment 002
+
+We have completed the first simulation and baseline analysis. The next step is **not** to claim a competition score. It is to test whether the improvements survive under a more varied setup.
+
+1. Keep the old Experiment 001 output, its reports and its random seed for comparison; never overwrite them with Experiment 002.
+2. Inspect the complete generator code and full provenance distributions before changing target fractions, event lengths, insertion positions or station sampling.
+3. Generate more varied **continuous target fractions** and carefully chosen zero-addition cases, while keeping the recorded hull and background-run partitions isolated.
+4. Compare the preselected combined acoustic summaries, the original raw features and a simple constant baseline on **new validation examples**. Avoid picking the winning feature representation based on the old 80 examples again.
+5. Add controls for different background stations, vessel classes and template scaling, and check sensitivity to acoustic background contamination.
+6. Use future station holdouts only for a separate, clearly labelled stress test. Confirm the latest competition rules, licensing and both required submission columns before any submission.
+
+**In plain English:** We now have a working training pipeline and a promising new way to describe underwater sound. We still need to establish whether the improvement is robust and whether our simulation resembles the hidden challenge well enough to be useful.
 
 ---
 
-**Short project status:** We have prepared and checked the background windows, verified all VTUAD audio files, found important metadata limitations, created a time-separated background split and a hull-separated vessel split, and confirmed that a basic 25-band extractor works for one real file and a known test tone. Our next job is to improve the source split and build the tested extraction and synthetic-mixture pipeline. We have **not yet trained or scored a prediction model**.
+**Short project status:** We prepared the background windows, checked the VTUAD audio, made separate source splits, extracted 1,892 acoustic minute records, generated 200/80 simulated mixtures, and trained initial models. A combined 96-feature Random Forest reached an exploratory RMSE of 0.119687 on the existing synthetic validation set. The next step is a new simulation experiment with fresh validation and stronger realism checks. No hidden-test RMSE or reliable competition score is known.
