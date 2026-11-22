@@ -256,7 +256,7 @@ def run(args):
     verify_split(bg,vt,br,vh)
     br_csv=pd.DataFrame([{'run_id':g,'station':s,'allocation':br[g]}
                           for g,s in sorted(bg.groupby('run_id').station.first().items())])
-    vh_csv=pd.Data([{'hull_id':g,'vessel_class':s,'allocation':vh[g]}
+    vh_csv=pd.DataFrame([{'hull_id':g,'vessel_class':s,'allocation':vh[g]}
                           for g,s in sorted(vt.groupby('hull_id').label.first().items())])
     reader=ParquetRowReader()
     train,train_meta,train_stations=build_training(bg,vt,br,vh,args.train,args.seed+101,reader)
