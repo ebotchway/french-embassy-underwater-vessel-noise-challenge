@@ -184,3 +184,46 @@ The contrast-varied regressor improved the prespecified internal assessment RMSE
 
 **Read-only decision-gate audit:** Output manifest present; all policy interpretations remain descriptive and no further model selection was performed. Verified gate source SHA256: `f40a18c0cc361ef3f8d4fb20797044dd1c12e421c4e2e4f0649ec3d0211309b4`.
 
+
+### VTUAD Storage and Provenance Checkpoint — 22 November 2026
+
+The redundant reconstructed VTUAD vessel ZIP was removed after confirming byte-for-byte equivalence with the concatenated original vessel ZIP parts. The reconstructed archive and concatenated parts produced the same SHA-256 checksum:
+
+`96564721a917d8b4dd161fdb90c66db917136786e6f4680028be6c6e03cf8ac6`
+
+All three original vessel ZIP parts and the original background ZIP were retained. The restoration utility subsequently verified their publisher checksums and confirmed that reconstruction remained available.
+
+Removing the redundant combined archive reduced local VTUAD download storage from approximately 7.8 GiB to 4.3 GiB and increased reported available filesystem space from approximately 10 GiB to 14 GiB.
+
+A new non-overwriting provenance audit completed successfully with 525 WAV checksum-ledger entries and six station summaries. Its output is retained at `reports/audits/submission_provenance_after_storage_cleanup_v1/`.
+
+The provenance audit confirms local inventory integrity only. Verified hydrophone deployment coordinates, physical-pressure calibration, independent natural-vessel event attribution, and public external-data disclosure remain unresolved scientific requirements.
+
+
+### Phase 9 — Independent Real-Acoustic Appendix Reproduction
+
+The real-acoustic results appendix was independently regenerated using the second Python 3.13 environment (`.venv-repro`), with the original recorded configuration of 1,000 bootstrap draws and random seed 42.
+
+The independent builder and artifact verifier both completed successfully. Six station summaries, 460 sampled recording-run entries, 25 spectral bands, and 459 defined plus one undefined robust-z diagnostic values were reproduced.
+
+All three numerical CSV files matched the original within the specified numerical comparison tolerances. All five scientific PNG figures and the Markdown appendix were byte-identical to the previously validated outputs.
+
+The regenerated PDF and manifest had different SHA-256 hashes; their differences require separate content and metadata examination before asserting complete artifact equivalence.
+
+This establishes independent computational reproducibility of the real-acoustic appendix from the three existing derived training-only input files. It does not establish independent reconstruction of those inputs from raw measurements, physical-pressure calibration, authoritative hydrophone coordinates, or natural-vessel attribution.
+
+Frozen assessment partitions were not accessed for model tuning, and the existing scientific outputs were preserved.
+
+### Phase 9 — Independent Scientific Reproduction: Passed
+
+On 22 November 2026, the South African real-acoustic descriptive appendix was independently regenerated in the separate `.venv-repro` Python 3.13 environment.
+
+The reproduction used the original three derived training-only input datasets, 1,000 bootstrap draws, and random seed 42. The builder and independent artifact verifier both passed.
+
+All three scientific numerical CSV tables reproduced within the specified comparison tolerances. All five scientific figures and the Markdown appendix were byte-identical to their original counterparts.
+
+The original and reproduced PDFs both contained four pages, with identical extracted text. Their different SHA-256 hashes corresponded to differing ReportLab creation/modification timestamps. The provenance manifests were identical in all compared fields except the PDF output hash.
+
+This establishes reproducibility of the descriptive scientific appendix from its existing derived inputs. It does not establish complete raw-data-to-report reproduction or independent validation of physical pressure, deployment coordinates, or natural-vessel attribution.
+
+The original validated outputs and protected evaluation partitions were preserved.
