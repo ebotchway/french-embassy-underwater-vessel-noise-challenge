@@ -4,7 +4,7 @@
 
 **Updated:** 22 November 2026 
 
-**Status:** Background and vessel data checks, class-aware source splitting, 1,892 minute-level vessel features, synthetic-mixture generation, and first model experiments are complete. The best exploratory feature experiment reached an RMSE of 0.119687 on 80 synthetic validation examples. We have not yet measured performance on the competition’s hidden labels.
+**Status:** Synthetic Experiments 001 and 002 have been completed. The Experiment 002 96-feature Random Forest reached RMSE 0.112061 and MAE 0.073236 on 300 synthetic validation examples, with known source, duration and station sensitivities. No leaderboard score or verified natural-vessel detection accuracy is available. Preparing an initial, format-checked inference submission and a separate research write-up.
 
 ## Why we wrote this document
 
@@ -501,7 +501,7 @@ The preview included vessel additions lasting **2, 3, 4 and 14 minutes** and dif
 
 **Why we inspected this:** We want Experiment 002 to reuse the known-good parts of our generator, maintain source separation, and change the simulation rules deliberately rather than guessing how the old generator works.
 
-## 19. Our next work: Synthetic Experiment 002
+## 19. Historical plan for Synthetic Experiment 002 (now completed)
 
 We have completed the first simulation and baseline analysis. The next step is **not** to claim a competition score. It is to test whether the improvements survive under a more varied setup.
 
@@ -516,4 +516,107 @@ We have completed the first simulation and baseline analysis. The next step is *
 
 ---
 
-**Short project status:** We prepared the background windows, checked the VTUAD audio, made separate source splits, extracted 1,892 acoustic minute records, generated 200/80 simulated mixtures, and trained initial models. A combined 96-feature Random Forest reached an exploratory RMSE of 0.119687 on the existing synthetic validation set. The next step is a new simulation experiment with fresh validation and stronger realism checks. No hidden-test RMSE or reliable competition score is known.
+**Short project status as of 22 November 2026:** We completed Experiments 001 and 002; our best Experiment 002 synthetic-validation RMSE is 0.112061 on 300 examples. We now have source- and session-level failure diagnostics, an identified per-window normalization assumption, and a controlled plan for the next research audit. We have not measured hidden-test RMSE or validated detection of natural vessel passages.
+
+
+## 20. Experiment 002: completed study, not a leaderboard result
+
+We created `scripts/build_synthetic_mixtures_v2.py` and `scripts/train_synthetic_baselines_v2.py` without overwriting Experiment 001. These were committed as Git commit `aa3fb5f`. The updated research notebook was committed in `a531103`.
+
+Our new mixture generator formed **1,200 training and 300 validation windows**, each with **15 minutes × 25 frequency bands**. All six development stations provided 200 training examples and 50 validation examples. The generator sampled continuous target-energy fractions, with 233/63 training/validation zero-addition examples, 340/70 weak examples and 627/167 broader additions. The pipeline reported **zero cross-partition overlap** in known background run IDs, vessel clip IDs and hull IDs. This does not guarantee independence of broader environmental conditions, recording deployments or acquisition equipment.
+
+| Predeclared Experiment 002 model | Synthetic validation RMSE | MAE | Signed bias |
+|---|---:|---:|---:|
+| Constant training-average prediction | 0.250364 | 0.220723 | -0.003617 |
+| Random Forest on all 375 measurements | 0.144499 | 0.105283 | -0.021487 |
+| Random Forest on 50 spectral summaries | 0.147717 | 0.102357 | -0.005421 |
+| **Random Forest on 96 combined summaries** | **0.112061** | **0.073236** | **-0.004937** |
+
+The combined feature family did best, with a 55.2% relative reduction in RMSE compared with the constant baseline **in this synthetic experiment**. It also had the lowest MAE. The earlier 0.119687 result and this new 0.112061 result use different synthetic distributions, so they should not be described as a controlled before-and-after improvement. These experiments do **not** estimate the hidden leaderboard RMSE.
+
+Our 96 features include four whole-window statistics, 50 band-wise spectral statistics and 42 temporal difference summaries. They do not require labelled test measurements for feature construction.
+
+## 21. The original notebook warned us about several problems: what is confirmed?
+
+The first notebook established that source coverage, recording intervals, recorder/deployment configurations and contiguous run lengths differ between South African stations. We built fully observed 15-minute windows and excluded stations that could not supply them. Later experiments made the importance of these distinctions more visible:
+
+| Earlier observation | Later evidence | Strength of conclusion |
+|---|---|---|
+| Some stations have unusual recording schedules and frequent gaps | St Francis has exactly 15-minute complete runs under the current indexing rules and weak-event RMSE 0.2331 | **Both patterns measured; causation not proven** |
+| Available recording windows are unevenly distributed | Experiment 001's 80 validation examples were dominated by Richards Bay; Experiment 002 explicitly balanced station counts | **Confirmed sampling issue, partly addressed** |
+| Different stations and recorder configurations may produce different acoustic patterns | Experiment 002's combined-model station RMSE ranges from 0.062544 to 0.142756 | **Confirmed error heterogeneity; equipment explanation untested** |
+| Counts of windows may overstate effective independent samples | Durban's 50 validation examples all came from one indexed run | **Confirmed dependence structure; independent-session diversity remains limited** |
+| VTUAD publisher's split reused hull identities | Custom v2 hull split has zero known hull overlap across train and validation | **Identified leakage risk and implemented safeguard** |
+| Relative WAV power and South African dB levels are not physically calibrated together | Generator deliberately imposes fractional additions | **Still unresolved physically: exact arithmetic is not acoustic calibration** |
+
+**The central lesson:** Some initial data issues are confirmed and handled, but none of the current model-error correlations proves that recording interruptions, hardware, geography or vessel type caused those errors. Our next experiments must change one factor at a time.
+
+## 22. Detailed Experiment 002 failure analysis
+
+The stronger 96-feature model still struggles in certain situations:
+
+| Subset | Validation examples | RMSE | Average signed error |
+|---|---:|---:|---:|
+| Zero added vessel energy | 63 | 0.036081 | +0.014969 |
+| Weak addition | 70 | 0.115271 | +0.057446 |
+| Broader addition | 167 | 0.128444 | -0.038596 |
+| St Francis, weak additions | 10 | 0.2331 | +0.2111 |
+| One-minute events | 82 | 0.1391 | -0.0356 |
+| Two-minute events | 78 | 0.1170 | +0.0067 |
+| Three-minute events | 47 | 0.0939 | +0.0043 |
+
+At St Francis, the ten weak examples have mean true added share **0.0375** and mean prediction **0.2486**. This warrants investigating background temporal variation, but our current analyses cannot isolate the cause. Some zero-addition predictions also reached **0.220517**, so a low average zero-group RMSE does not eliminate important false positives.
+
+Across all 300 validation examples, **12 of the 30 largest errors** involved one-minute events (82 such examples overall), while **10 of the 30 largest** involved two-minute events (78 overall). Thus 22/30 of the largest errors came from 1–2-minute additions, compared with 160/300 of all examples. Short-duration event detection should be a priority, without attributing every error to duration alone.
+
+We compared how often individual source groups appeared among the worst errors against how often they appeared overall. Durban's validation recording run appeared **7/30 times**, but supplied **50/300** examples, corresponding to **1.40×** proportional enrichment—not 7 independent failed sessions. Bird Island's displayed run appeared **3/30** versus **18/300** overall (**1.67×**). Hulls H118 (5/30 among 32 exposures), H029 (4/30 among 18) and H101 (3/30 among 12) are research leads, not proven faulty sources. One-example groups with 10× enrichment have too little exposure to support conclusions. The top-30 criterion was selected during exploratory diagnosis, so these are descriptive statistics, not formal significance tests.
+
+Vessel classes in the evaluation are unevenly represented; dredger and pilot vessel have no v2 validation hulls. We will not claim measured generalization to these classes.
+
+## 23. Important newly identified issue: per-window normalization
+
+Inspection of the actual generator code uncovered an assumption we must carry into every new training or inference experiment. In `scripts/build_synthetic_mixtures_v1.py`, the background conversion is effectively:
+
+```python
+reference = np.max(background_levels_db)
+background_relative_energy = 10 ** ((background_levels_db - reference) / 10)
+```
+
+The generator then chooses an added relative-energy template and `alpha` to reproduce a requested energy fraction, and stores the logarithm of the resulting mixture. This is mathematically consistent. **But the normalization removes absolute window level from the starting background representation.** It may produce different feature distributions from the original Zindi test measurements, and may erase useful amplitude information or create a simulation-specific cue. The physical measurement reference and cross-dataset calibration remain unverified.
+
+This is not evidence of incorrect code or a competition-rule violation. It is an **unverified modelling assumption**. It must be assessed with a prespecified normalization comparison on training/validation data, not by choosing an option based on hidden-test results. For inference, any per-window transformation must be fixed and applied consistently to training and test. We must never fit means, calibration factors, target scales, thresholds or models on test features.
+
+## 24. Current official Zindi rules and two different submissions
+
+As checked on **22 November 2026** using the challenge pages:
+
+- Official competition: https://zindi.world/competitions/french-embassy-underwater-vessel-noise-challenge
+- Data description: https://zindi.world/competitions/french-embassy-underwater-vessel-noise-challenge/data
+- **Leaderboard submission:** A CSV containing exactly the `ID`, `share_added_vessel`, and `score_added_vessel` columns in the sample submission's order. There are 1,500 test IDs. Both outputs must be finite, continuous values from 0 through 1. The first is the controlled vessel-added energy fraction; the second is an evidence score, not a probability that any natural vessel is present. Only `share_added_vessel` affects the ranking score, **1 − RMSE**. A public/private split uses approximately 30%/70% of test records. The stated limit is **two submissions per day**, **200 overall**.
+- **Research write-up:** Separate PDF plus a runnable notebook or code, supported by evidence from **real South African acoustic measurements**, an uncertainty-aware comparison with a baseline, and defensible **relative pressure/activity maps** (absolute pressure only with verified calibration). The published write-up deadline is **13 December 2026 at 11:30 UTC**. Check the live page again before delivery.
+- External corpora such as VTUAD/ONC are allowed subject to licence and equal-access disclosure. Publish permitted source URLs, versions, processing and download instructions to the challenge community. Do **not** redistribute audio or contest data without permission.
+- The test measurements are **for inference only**. Do not fit, fine-tune, calibrate, construct synthetic training labels, pseudo-label, or perform leaderboard probing with them. Report reproducible code, dependencies, data sources, seeds, source splits, inference runtime and model size. Only public/open-source packages are allowed; AutoML is prohibited by the challenge rules.
+
+**Submission decision:** It is reasonable to make one carefully checked **exploratory leaderboard submission**, with an honest warning that synthetic-validation scores cannot predict leaderboard performance. The notebook and this learning log are NOT the leaderboard CSV. We should not describe the existing EDA notebook as a finished research write-up: real acoustic validation, pressure maps, final figures, source attribution, and a clean reproducibility appendix remain incomplete. If we have not checked the fixed inference representation and CSV integrity, wait to upload the leaderboard candidate until those checks pass.
+
+The `score_added_vessel` field may initially use an **uncalibrated monotone evidence proxy**, explicitly labelled as such, rather than claiming a validated probability. A basic first candidate may produce the same numeric value as the predicted added share for both fields, but the concepts have distinct meanings and a later proper evidence model may improve the diagnostic score.
+
+### Missing measurements in the competition's inference inputs
+
+The official data page explicitly warns that blank cells in `Test.csv` are missing observations (`NaN`), **not silence**, and the target uses the same observed minute–band cells. A read-only schema/missingness inspection of the supplied file found **18,350 missing minute–band cells** among **562,500** input cells, affecting **725 of 1,500 windows**. There were no partially missing minutes in that inspected copy: missing values occurred as entire 25-band minute profiles. The first minute was absent in **624 windows**; the last minute in **100 windows**; a few gaps occurred elsewhere. These are input-validity observations, not target information, and were not used for training, calibration or label inference. The actual test must never be used to fit an imputation model or choose a predictor based on its values.
+
+The draft inference script uses **fixed within-window temporal interpolation by frequency band**, extending the nearest observed minute at missing boundaries, then applies the same window-reference shift to synthetic training/validation/test. It also reports **predeclared synthetic-validation masking checks** (first/last/middle/both endpoints missing) to describe sensitivity without learning from the competition test. This simple imputation is an initial pragmatic choice, not a verified reconstruction of the missing underwater sound or a demonstration that the competition target can be recovered precisely when measurements are absent. A mask-aware model is a future research candidate.
+
+## 25. The next reproducible audit and experiments
+
+The next script, `scripts/audit_acoustic_data_model_alignment.py`, reads **only saved Experiment 002 validation predictions, their source provenance, and the background window index**. It does not touch the competition test data. It produces summaries by station, target regime, event duration, source class, background run, clip and vessel hull, plus a JSON explanation of limitations. It should be run from the project root and saved into `reports/eda/data_model_alignment/`.
+
+After auditing, prepare a controlled Experiment 003: (1) matched tests of duration at fixed background/source and target fraction; (2) a normalization/representation ablation using identical transforms at training and inference; (3) grouped-by-session uncertainty, not falsely independent row-level resampling; (4) changed-source spectral or mixing robustness; and (5) a separate plan for genuine real-acoustic evidence, while leaving Fish Hoek and Sea Point as reserved holdouts until evaluation rules are frozen. Do not change all factors together or repeatedly tune against Experiment 002's already-used validation set.
+
+For a first CSV candidate, `scripts/prepare_zindi_first_submission.py` fits **only synthetic Experiment 002 training examples**, checks the held-out synthetic validation for reporting, and predicts the 1,500 test windows after an identical fixed per-window log-level shift. **This is a new representation experiment, not the source of the earlier 0.112061 result.** It runs in dry-run mode by default and writes a candidate only on explicit request. Review its new synthetic-validation score and the submission's schema before any upload; do not select a representation based on leaderboard feedback.
+
+## 26. Publication quality, attribution and honest authorship
+
+Write the research material in direct, natural language: explain what was measured, what we assumed, what we tested, what failed, and what is still unknown. Preserve figures, source provenance, methods and negative results. **No watermarks, decorative branding or hidden identifying overlays are added to these working files.** This is a plain Markdown log and a standard Jupyter notebook, not an assurance about third-party software or Zindi's own processing. Do not claim academic verification, authorship or physical calibration we cannot document. Keep all external-data licence and acknowledgement notices. Remove personal/local directory paths, access secrets, restricted data or source audio before sharing a public notebook. Organizers may require a polished PDF report; a technical notebook alone is not a substitute.
+
+**Current research position:** Our notebooks identified meaningful data constraints; later simulations reproduce meaningful performance variation, but have not shown their causes. We have a reproducible synthetic baseline, a defensible alignment-audit plan, and a path to a carefully verified first leaderboard candidate. The separate real-data research report still needs evidence and maps.
