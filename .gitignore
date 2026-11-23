@@ -18,3 +18,7 @@ experiments/
 *.partial
 *.joining
 *.tmp
+
+# Private local backup manifest & trainer scratch
+docs/PRIVATE_LOCAL_ARCHIVE.md
+catboost_info/
