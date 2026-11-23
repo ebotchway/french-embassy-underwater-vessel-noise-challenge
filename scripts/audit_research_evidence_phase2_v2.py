@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Evidence-led, read-only Phase 2 v2 audit of existing research materials.
-
-This script never accesses Test.csv, original validation, exp004_eval, or station holdouts.
-It does NOT certify deployment positions, physical calibration, or a VTUAD release.
-Outputs only a NEW directory after all input scanning succeeds.
-"""
+"""Evidence-led, read-only Phase 2 v2 audit of existing research materials."""
 from __future__ import annotations
 import argparse, csv, datetime as dt, hashlib, json, re, tempfile, os, math
 from pathlib import Path

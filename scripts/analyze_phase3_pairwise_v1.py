@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Pair-aware retrospective analysis of Experiment 003 development predictions.
-
-No refitting, no Test.csv, no leaderboard inputs. Treat matched background/source
-pair (not repeated scenario row) as the resampling cluster. Results are
-DESCRIPTIVE development evidence, not independent confirmation of transfer.
-Run from project root:
- python scripts/analyze_phase3_pairwise_v1.py
-"""
+"""Pair-aware retrospective analysis of Experiment 003 development predictions."""
 from __future__ import annotations
 import argparse
 import json

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Optional checksum verification against researcher-supplied authoritative publisher records.
-
-CSV columns: asset_name,local_relative_path,checksum_algorithm,publisher_checksum,publisher_record_url
-Accepted algorithms: sha256,md5. Verification is per asset, not certification of the full dataset.
-Never download, overwrite, or publish source files.
-"""
+"""Optional checksum verification against researcher-supplied authoritative publisher records."""
 import argparse,csv,hashlib,json,tempfile
 from pathlib import Path
 

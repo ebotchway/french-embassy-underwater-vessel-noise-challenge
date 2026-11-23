@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""Training-only simulation realism sensitivity audit (no model fitting).
-
-Uses the EXACT previously sampled training background runs from the real-acoustic
-source audit, exp004_train vessel clips, and frozen manifests. Compares original
-VTUAD energy spectra against controlled spectral-shape interventions, holding
-background, inserted event, relative added energy share, and insertion fixed.
-These are counterfactual sensitivity controls, NOT calibrated vessel acoustics.
-
-  python scripts/audit_simulation_realism_v1.py --self-test-only
-  python scripts/audit_simulation_realism_v1.py
-
-Never reads exp004_eval, existing_validation, sealed holdouts, or Test.csv.
-The output directory is created atomically only after successful computation.
-"""
+"""Training-only simulation realism sensitivity audit (no model fitting)."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -56,13 +43,7 @@ def temporal_features(levels):
 
 
 def reshape_source_spectrum(vessel, background, gamma):
-    """Gamma=0 original; .5 blend; 1 background-aligned band mean.
-
-    Multiplicative change to source band powers (including relative temporal
-    envelope), so experimental alpha later enforces the SAME full-window q.
-    Unbounded difference is clipped at +/-20 natural-log units for stability;
-    clip fraction is returned and must be disclosed. Zero remains exactly zero.
-    """
+    """Gamma=0 original; .5 blend; 1 background-aligned band mean."""
     v=np.asarray(vessel,dtype=float)
     b=np.asarray(background,dtype=float)
     if v.shape!=(15,25) or b.shape!=(15,25) or gamma not in (0.,.5,1.):

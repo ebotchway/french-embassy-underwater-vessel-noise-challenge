@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""One-shot prespecified Experiment 004 frozen-group evaluation.
-
-Train only on exp004_train. Evaluate once on exp004_eval. Fixed RF settings
-matching earlier RF experiments, two representations, regression + detection.
-No test, old validation, holdout, or leaderboard-based fitting. No tuning.
-"""
+"""One-shot prespecified Experiment 004 frozen-group evaluation."""
 from __future__ import annotations
 import argparse
 import hashlib

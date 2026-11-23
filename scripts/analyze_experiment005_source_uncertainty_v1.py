@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 005: paired, source-aware descriptive uncertainty audit.
-
-Reads ONLY the already-created training-only simulation-realism paired output.
-Does not access the competition Test.csv, frozen eval, or sealed holdouts.
-Does not refit, alter source data, or create a leaderboard submission.
-
-Usage:
-  python scripts/analyze_experiment005_source_uncertainty_v1.py --self-test-only
-  python scripts/analyze_experiment005_source_uncertainty_v1.py
-
-A cluster bootstrap over background RUNS is descriptive: vessel hulls/clips can
-repeat across runs, and stations/sessions may still be dependent. Leave-one-
-source-out checks are provided; none of this establishes a real-vessel label.
-"""
+"""Experiment 005: paired, source-aware descriptive uncertainty audit."""
 from __future__ import annotations
 import argparse
 import hashlib

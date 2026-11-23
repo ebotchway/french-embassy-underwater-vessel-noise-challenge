@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble an evidence-based research manuscript draft from local audited reports.
-
-Includes real South African training-source measurements, synthetic grouped
-benchmark metrics (clearly labelled), shape distance, source limitations, and
-optional training-only simulation realism outcomes. Does not modify notebook,
-learning log, prior outputs, or any competition test data.
-
-  python scripts/assemble_acoustic_research_checkpoint_v1.py
-"""
+"""Assemble an evidence-based research manuscript draft from local audited reports."""
 from __future__ import annotations
 import argparse
 import hashlib

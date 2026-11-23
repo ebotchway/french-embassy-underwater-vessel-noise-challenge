@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 006B: READ-ONLY source/protocol audit of Experiment 006.
-
-Uses ONLY the Experiment 006 outputs, never the synthetic source archives,
-Experiment 004 evaluation/validation/holdouts, or Zindi test data.
-
-Examples:
- python scripts/audit_experiment006b_readonly_v1.py --self-test-only
- python scripts/audit_experiment006b_readonly_v1.py
- python scripts/audit_experiment006b_readonly_v1.py --bootstrap 1000 --output reports/audits/experiment006b_v2
-
-Statistical interval: paired development-background-pair bootstrap, conditional on
-this single internal split and its reused vessel sources. Hull and station
-sensitivities are separately reported, not mistakenly called independent CIs.
-"""
+"""Experiment 006B: READ-ONLY source/protocol audit of Experiment 006."""
 from __future__ import annotations
 import argparse
 import hashlib

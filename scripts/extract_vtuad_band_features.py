@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Extract relative third-octave band power from VTUAD WAV files.
-
-The outputs are digital mean-square powers, NOT calibrated dB SPL.
-Only full 60-second audio blocks are used.
-"""
+"""Extract relative third-octave band power from VTUAD WAV files."""
 
 import argparse
 import csv

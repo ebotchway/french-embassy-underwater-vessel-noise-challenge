@@ -1,20 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 007: preallocated, source-disjoint synthetic train/calibration/assessment.
-
-Uses ONLY exp004_train rows from the SHA256-pinned Experiment 004 frozen manifests.
-Creates allocations BEFORE any background-vessel pairing. Neither Zindi Test.csv
-nor exp004_eval/original validation/sealed stations are read. Existing Experiment
-006 results are not used for fitting or threshold selection.
-
-Original-only and contrast-varied random forests are trained only on training.
-Thresholds and optional Platt calibrators are fitted only on calibration.
-Assessment is reported once, not used for model/threshold optimization.
-The hybrid retains the contrast-varied share regressor and original detector.
-
-Synthetic relative-energy outcomes are NOT natural vessel evidence. Prior
-research has inspected the source pools, so assessment is newly separated
-WITHIN this experiment, not a pristine external or real-world holdout.
-"""
+"""Experiment 007: preallocated, source-disjoint synthetic train/calibration/assessment."""
 from __future__ import annotations
 import argparse, hashlib, json, sys, tempfile
 from pathlib import Path
@@ -39,11 +24,7 @@ MAX_CAL_FPR = 0.25
 
 
 def allocation(frame, key, stratum, seed):
-    """Freeze 3-way group partition, keeping rare strata train-only.
-
-    Strata with 2 groups stay train-only because there cannot be simultaneous
-    group-independent train, calibration AND assessment in that stratum.
-    """
+    """Freeze 3-way group partition, keeping rare strata train-only."""
     classes = {}
     if frame[key].isna().any() or frame[stratum].isna().any():
         raise ValueError(f'Missing group/stratum identifier in {key}/{stratum}')
@@ -140,12 +121,7 @@ def metrics(d, threshold):
 
 
 def choose_threshold(cal):
-    """Predeclared high-sensitivity policy with FPR cap on genuine zeros.
-
-    If no threshold reaches the cap, 1.0 predicts no positives for standard
-    probability scores (which might include exactly 1.0); explicitly return
-    infeasible instead of reporting a successful calibration.
-    """
+    """Predeclared high-sensitivity policy with FPR cap on genuine zeros."""
     null=cal.no_addition_control.to_numpy(bool)
     pos=cal.observed_positive.to_numpy(bool)
     scores=cal.detection_score.to_numpy(float)
@@ -229,12 +205,7 @@ def source_overlap(train_meta,cal_meta,ass_meta):
 
 
 def assessment_sensitivity(predictions, thresholds, draws=600, seed=24680):
-    """Paired assessment uncertainty, with recording-run clustering.
-
-    The same matched pairs are evaluated under every policy. Recording-run
-    resampling is descriptive and does NOT eliminate repeated hull/deployment
-    correlation. Thresholds have already been fitted on calibration only.
-    """
+    """Paired assessment uncertainty, with recording-run clustering."""
     by_policy={p:d.copy() for p,d in predictions.groupby('policy',sort=True)}
     base=by_policy['original_only']; varied=by_policy['contrast_varied']; hybrid=by_policy['hybrid']
     ids={p:set(df.pair.astype(int)) for p,df in by_policy.items()}

@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Reproduce Submission 001's TRAIN/VALIDATION pipeline and measure detection.
-
-NO test values, labels, leaderboard feedback or calibration are used. Train
-and validation inputs come exclusively from synthetic_v2. Import the exact
-fixed preprocessing, features, and model configuration of the submitted script.
-
-Usage: python scripts/audit_submission001_detection.py
-"""
+"""Reproduce Submission 001's TRAIN/VALIDATION pipeline and measure detection."""
 from __future__ import annotations
 import argparse
 import hashlib

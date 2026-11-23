@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Synthetic Experiment 002: class-aware, station-balanced relative-energy mixtures.
-
-Run from the project root with build_synthetic_mixtures_v1.py in scripts/.
-Preserves synthetic_v1. Does NOT claim calibrated acoustics or Zindi performance.
-
-Examples:
-  python scripts/build_synthetic_mixtures_v2.py --self-test --train 24 --validation 12
-  python scripts/build_synthetic_mixtures_v2.py --self-test --train 1200 --validation 300
-"""
+"""Synthetic Experiment 002: class-aware, station-balanced relative-energy mixtures."""
 from __future__ import annotations
 
 import argparse

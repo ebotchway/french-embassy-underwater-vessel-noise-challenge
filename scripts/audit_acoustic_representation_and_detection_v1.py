@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only Phase 3 audit: official band grid, representation, and synthetic detection.
-
-Run from the French Embassy Underwater Vessel Noise Challenge project root:
-  python scripts/audit_acoustic_representation_and_detection_v1.py
-
-Reads official Test.csv only for column schema and missingness-mask structure.
-Does NOT fit, compare level distributions, optimize, or calibrate on test values.
-Does NOT train models or modify any prior experiment/submission. All reported
-performance comes from saved Experiment 002 *synthetic* validation predictions.
-
-Output: reports/audits/phase3_representation_detection_v1/
-"""
+"""Read-only Phase 3 audit: official band grid, representation, and synthetic detection."""
 from __future__ import annotations
 
 import argparse

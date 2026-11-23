@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
-"""Freeze a metadata-only run/hull-disjoint Experiment 004 split.
-
-Only original `train` groups can become exp004_train or exp004_eval.
-Existing validation, station_holdout, and excluded rows are left unchanged.
-Never reads acoustic values, predictions, leaderboard feedback or Test.csv.
-
-Example:
-    python scripts/freeze_experiment004_group_split.py --self-test-only
-    python scripts/freeze_experiment004_group_split.py
-
-Output folder must not already exist: a frozen split must not be overwritten.
-"""
+"""Freeze a metadata-only run/hull-disjoint Experiment 004 split."""
 from __future__ import annotations
 
 import argparse

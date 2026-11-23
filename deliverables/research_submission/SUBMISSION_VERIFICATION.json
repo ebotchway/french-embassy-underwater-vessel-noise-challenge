@@ -1,0 +1,30 @@
+{
+  "status": "VERIFIED_LOCAL_CANDIDATES_HOLD_FOR_ZINDI_ACTIONS",
+  "code_archive": {
+    "path": "deliverables/research_submission/research_code_v6.zip",
+    "bytes": 79563,
+    "sha256": "3916469a19c84a1a96a803f6f44e9ec1be869634a901e4a56b289ea352214f62",
+    "entries": 20
+  },
+  "clean_copy_verification": {
+    "py_compile_all_17": "PASS",
+    "site_context_figure_regen": "PASS",
+    "exp007_decision_gate_byte_identical_csvs": [
+      "policy_comparison.csv",
+      "calibration_assessment_gap.csv",
+      "source_deletion_summary.csv"
+    ],
+    "real_acoustic_results_v2_byte_identical_csvs": [
+      "validated_station_summary.csv",
+      "run_bootstrap_intervals.csv",
+      "robust_z_availability.csv"
+    ]
+  },
+  "research_pdf": {
+    "path": "deliverables/research_submission/research_manuscript.pdf",
+    "bytes": 671920,
+    "pages": 5,
+    "sha256": "176e41c4bd65ac28e4ad10179711f0818a698ef97fa9baea002df3df56b44719",
+    "figure4_fix_verified": true
+  }
+}

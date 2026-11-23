@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only Phase 4 descriptive spectrum alignment report; development summaries only.
-
-Run in repository root:
- python scripts/analyze_spectral_shape_mismatch_v1.py
-No model fitting, hidden-test access, evaluation/holdout access, or source recalibration.
-"""
+"""Read-only Phase 4 descriptive spectrum alignment report; development summaries only."""
 from __future__ import annotations
 import argparse
 import hashlib

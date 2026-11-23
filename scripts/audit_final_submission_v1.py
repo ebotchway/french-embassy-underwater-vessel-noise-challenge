@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only evidence-gated audit of Phase 5 scientific manuscript and research artifacts.
-
-Never clears submission automatically; does not train, fetch, or read hidden test data.
-Uses only the Phase 5 review output, existing manifests, and selected code/docs.
-"""
+"""Read-only evidence-gated audit of Phase 5 scientific manuscript and research artifacts."""
 from __future__ import annotations
 import argparse, csv, hashlib, json, re, tempfile
 from pathlib import Path

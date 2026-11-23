@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Build a small reproducible, leakage-aware simulated vessel-energy dataset.
-
-Inputs are real background 15x25 *level* windows and minute-level VTUAD
-*relative digital powers*. This is a relative-energy simulation; it does not
-establish calibrated underwater sound-pressure or reproduce a hidden generator.
-
-Usage:
-    python scripts/build_synthetic_mixtures_v1.py --self-test --train 200 --validation 80
-"""
+"""Build a small reproducible, leakage-aware simulated vessel-energy dataset."""
 from __future__ import annotations
 
 import argparse
@@ -59,11 +51,7 @@ def mix_at_share(background: np.ndarray, vessel: np.ndarray, q: float):
 
 
 def db_to_relative_energy(levels: np.ndarray):
-    """Convert level-like values to linear energy, normalized per window.
-
-    Per-window reference subtraction is an explicit assumption for simulation;
-    it intentionally does not claim meaningful cross-station absolute power.
-    """
+    """Convert level-like values to linear energy, normalized per window."""
     if levels.shape != SHAPE or not np.isfinite(levels).all():
         raise ValueError('Invalid background window')
     ref = float(np.max(levels))

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 004: metadata-only feasibility audit for independent source evaluation.
-
-Run at the project root. Reads manifest metadata only. Does not read acoustic
-samples, Test.csv, model predictions, or any reserved-station measurements.
-Does not generate new splits or change existing manifests.
-"""
+"""Experiment 004: metadata-only feasibility audit for independent source evaluation."""
 from __future__ import annotations
 import argparse, hashlib, json
 from pathlib import Path

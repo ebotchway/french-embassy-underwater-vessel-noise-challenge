@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only source-dependence sensitivity for Experiment 003.
-
-Descriptive deletion diagnostics only; not independent validation, not a source-level
-confidence interval. Does not load Test.csv or hidden labels. Keeps all prior outputs.
-Run from repository root:
-  python scripts/analyze_phase3_source_sensitivity_v1.py
-"""
+"""Read-only source-dependence sensitivity for Experiment 003."""
 from __future__ import annotations
 import argparse
 import hashlib

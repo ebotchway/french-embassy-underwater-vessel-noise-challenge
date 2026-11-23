@@ -1,6 +1,5 @@
 # Python environment
 .venv/
-.venv-repro/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
@@ -18,16 +17,4 @@ experiments/
 # Temporary files
 *.partial
 *.joining
-
-/experiment*_package/
-/finalization_package/
-/phase2_v2_package/
-/real_acoustic*_package/
-/research_phase2_package/
-
-# Temporary research distribution packages
-/phase5_asset_fix_package/
-/phase6_audit_package/
-/research_phase4_package/
-/research_phase5_package/
-/requirements.before-final-freeze.txt
+*.tmp

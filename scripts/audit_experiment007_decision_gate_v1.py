@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only evidence gate for completed Experiment 007.
-
-Consumes only Experiment 007 saved outputs. Never tunes thresholds, retrains models,
-reopens the earlier frozen validation, or reads the competition test.
-"""
+"""Read-only evidence gate for completed Experiment 007."""
 from __future__ import annotations
 import argparse, hashlib, json, tempfile
 from pathlib import Path

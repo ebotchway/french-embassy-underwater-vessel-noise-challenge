@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 002: fixed, predeclared acoustic summaries vs reference baselines.
-
-Use once on a fresh synthetic_v2 validation split. Not a Zindi score.
-Requires train_synthetic_baselines_v1.py in same scripts directory.
-"""
+"""Experiment 002: fixed, predeclared acoustic summaries vs reference baselines."""
 from __future__ import annotations
 
 import argparse

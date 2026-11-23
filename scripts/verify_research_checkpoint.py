@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only, evidence-based inventory of underwater acoustic research artifacts.
-
-No training, uploads, downloads, data deletions, or reconstruction are performed.
-Reports are written only to a new --output directory; existing dirs are refused.
-"""
+"""Read-only, evidence-based inventory of underwater acoustic research artifacts."""
 from __future__ import annotations
 import argparse
 import csv

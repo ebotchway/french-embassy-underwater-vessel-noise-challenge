@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Audit and evaluate simple baselines on simulated 15x25 acoustics.
-
-This is a *simulation sanity check*, not an estimate of Zindi leaderboard score.
-Only acoustic X is used as model input; provenance is for audits/reporting.
-
-Usage from repository root:
-    python scripts/train_synthetic_baselines_v1.py
-    python scripts/train_synthetic_baselines_v1.py --input reports/eda/synthetic_v1
-"""
+"""Audit and evaluate simple baselines on simulated 15x25 acoustics."""
 from __future__ import annotations
 
 import argparse

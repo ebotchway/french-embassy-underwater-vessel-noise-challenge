@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only postprocessing for the Experiment 004 training-only real-acoustic audit.
-
-Uses ONLY reports/audits/real_acoustic_development_v1 outputs. Does not access
-competition Test.csv, frozen evaluation/validation, or sealed station holdouts.
-Produces three scientific figures, run-bootstrap descriptive intervals and a
-short Markdown evidence record. No physical pressure or vessel presence claim.
-"""
+"""Read-only postprocessing for the Experiment 004 training-only real-acoustic audit."""
 from __future__ import annotations
 import argparse
 import hashlib

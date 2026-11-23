@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""Safely organize a flat underwater-vessel challenge folder (stdlib only).
-Usage: python scripts/setup_underwater_project.py --root . --apply
-Default is a dry run. Re-running is supported; source files are never overwritten.
-"""
+"""Safely organize a flat underwater-vessel challenge folder (stdlib only)."""
 import argparse, csv, hashlib, json, re, shutil, sys, zipfile
 from pathlib import Path
 from datetime import datetime, timezone

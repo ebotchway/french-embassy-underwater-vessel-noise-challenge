@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only source lineage audit + guarded *candidate* reproduction-code ZIP.
-
-Never reads acoustic data rows, hidden/test/validation/eval partitions or audio.
-Never runs scientific modelling. Does not certify upstream raw-data reproduction.
-"""
+"""Read-only source lineage audit + guarded *candidate* reproduction-code ZIP."""
 from __future__ import annotations
 import argparse
 import hashlib

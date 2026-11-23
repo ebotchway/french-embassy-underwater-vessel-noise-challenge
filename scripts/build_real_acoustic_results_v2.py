@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Create evidence-limited South African acoustic descriptive results. No test data or geospatial attribution.
-
-Input: existing training-only station summary, station spectral shape, and station-relative proxy.
-Outputs: evidence-checked figures, run-bootstrap intervals, methods/results manuscript appendix, PDF,
-         provenance manifest. Outputs are staged and will never overwrite a prior run.
-"""
+"""Create evidence-limited South African acoustic descriptive results. No test data or geospatial attribu...."""
 from __future__ import annotations
 import argparse
 import hashlib

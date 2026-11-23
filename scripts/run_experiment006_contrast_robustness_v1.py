@@ -1,19 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 006: source-group-separated INTERNAL DEVELOPMENT contrast robustness.
-
-No exp004_eval, existing_validation, sealed_station_holdout or Zindi Test.csv.
-Use only exp004_train source rows. Deterministically split its recording runs and
-vessel hulls into INTERNAL train/dev pools, then freeze the chosen split by SHA256.
-Compare equal-size original-template vs spectrum-varied RF models on matched
-synthetic development pairs. This is a sensitivity experiment, NOT evidence of
-real vessel acoustics or competition generalization.
-
-Run from project root:
-  python scripts/run_experiment006_contrast_robustness_v1.py --self-test-only
-  python scripts/run_experiment006_contrast_robustness_v1.py --train 1200 --dev-pairs 120
-
-Output directory must not exist. Frozen Experiment 004 files are only READ.
-"""
+"""Experiment 006: source-group-separated INTERNAL DEVELOPMENT contrast robustness."""
 from __future__ import annotations
 import argparse
 import hashlib

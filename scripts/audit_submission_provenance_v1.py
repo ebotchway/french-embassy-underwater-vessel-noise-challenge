@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""Evidence-only Phase 5 provenance ledger. No model, hidden test, publishing or geo-inference.
-
-Run from project root. Do not use this script to certify source release/deployment.
-"""
+"""Evidence-only Phase 5 provenance ledger. No model, hidden test, publishing or geo-inference."""
 from __future__ import annotations
 import argparse, csv, hashlib, json, re, tempfile
 from datetime import datetime, timezone

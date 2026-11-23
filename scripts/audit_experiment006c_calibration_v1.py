@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 006C: source-group-disjoint threshold calibration and assessment.
-
-READ ONLY: imports the Experiment 006B validation routine and uses existing
-Experiment 006 predictions. Does not train/retrain vessel estimators, access
-frozen Experiment 004 eval, historic validation, sealed stations or Zindi Test.
-Platt calibration is a diagnostic score mapping fitted on internal calibration
-pairs only. Thresholds are selected only on calibration pairs.
-
-Scientific limitation: the Experiment 006 model was previously inspected on the
-whole development partition. This secondary partition provides a disciplined
-threshold diagnostic, NOT a pristine independent final model-selection test.
-"""
+"""Experiment 006C: source-group-disjoint threshold calibration and assessment."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -35,11 +24,7 @@ def ensure(ok, why):
 
 
 def component_partition(pairs):
-    """Connected components of shared backgrounds, hulls and clips.
-
-    Any pair sharing one original recording run, hull, or clip belongs to the
-    same component; transitive links also stay in one partition.
-    """
+    """Connected components of shared backgrounds, hulls and clips."""
     pairs = pairs.sort_values('pair').reset_index(drop=True)
     parent = list(range(len(pairs)))
     def find(i):
@@ -74,11 +59,7 @@ def component_partition(pairs):
 
 
 def allocate(pairs, seed, fraction=.3, minimum=12):
-    """Search deterministic group-disjoint subset with minimum examples.
-
-    Selection does not inspect predictions or labels. If infeasible, return None
-    and still generate a truthful feasibility report.
-    """
+    """Search deterministic group-disjoint subset with minimum examples."""
     size=pairs.groupby('source_component').size().to_dict()
     n=len(pairs);target=round(n*fraction)
     if len(size)<2:return None
@@ -134,11 +115,7 @@ def measure(frame, threshold, score_col='detection_evidence', share_col='estimat
 
 
 def select_threshold(frame,cap=.25):
-    """Predefined rule: under calibration FPR cap, maximize sensitivity.
-
-    Tie: minimize FPR, then prefer higher threshold. 1.0 guarantees a
-    feasible always-negative fallback and makes lack of sensitivity visible.
-    """
+    """Predefined rule: under calibration FPR cap, maximize sensitivity."""
     y,s,z=label_and_scores(frame)
     ensure(z.any() and (y==1).any(),'Calibration lacks positive or genuine controls')
     grid=np.unique(np.r_[np.arange(.05,1.001,.05),1.0])

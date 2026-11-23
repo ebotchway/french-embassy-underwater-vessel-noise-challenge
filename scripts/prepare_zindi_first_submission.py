@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Create a cautious FIRST candidate CSV for the French Embassy noise challenge.
-
-Fits only Experiment 002 synthetic TRAIN. Uses validation for evaluation only.
-Applies an identical fixed per-window max-level shift to train/validation/test;
-that representation is a hypothesis, NOT the validated 0.112061 model.
-Test is used for inference only. Never use leaderboard feedback for fitting.
-Run from repository root, with train_synthetic_baselines_v2.py in scripts/.
-"""
+"""Create a cautious FIRST candidate CSV for the French Embassy noise challenge."""
 from __future__ import annotations
 import argparse
 import json
@@ -36,12 +29,7 @@ def feature_names():
 
 
 def impute_missing_minutes(X):
-    """Fixed within-window interpolation; missing level is NEVER treated as silence.
-
-    For each frequency band, interpolate in time; at the boundaries use nearest
-    observed minute. This uses only the current example, never other test rows,
-    targets or learned calibration. Missingness has not been evaluated synthetically.
-    """
+    """Fixed within-window interpolation; missing level is NEVER treated as silence."""
     X=np.asarray(X,dtype=np.float64).copy()
     if X.ndim!=3 or X.shape[1:]!=(15,25):
         raise ValueError('Unexpected test acoustic array shape')
@@ -80,11 +68,7 @@ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
 def synthetic_missingness_stress(model, Xva, yva):
-    """Prespecified robustness probes, never derived from competition test values.
-
-    Missing entire minute profiles are emulated in the synthetic validation set.
-    Compare to the SAME model and y; no parameter search or fitting occurs here.
-    """
+    """Prespecified robustness probes, never derived from competition test values."""
     tests={'missing_first_minute':[0], 'missing_last_minute':[14],
            'missing_middle_minute':[7], 'missing_both_edges':[0,14]}
     reports={}

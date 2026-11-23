@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Download HearMyShip audio referenced by an exported vessels.json.
-
-Run a one-record test first. Use --all only after confirming the test works.
-Respects 429/Retry-After, sends sequential requests, and checks WAV headers.
-"""
+"""Download HearMyShip audio referenced by an exported vessels.json."""
 import argparse
 import csv
 import json

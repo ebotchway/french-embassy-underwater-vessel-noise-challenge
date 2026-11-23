@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 004: frozen-group-only synthetic mixtures, with observed-cell labels.
-
-Use only the EXP004 frozen source manifests. Never reads Test.csv, public scores,
-or previously inspected validation sources. Outputs are synthetic research evidence,
-not calibrated absolute underwater acoustic pressures.
-
-Invocation (from project root):
- python scripts/build_experiment004_frozen_mixtures.py --self-test-only
- python scripts/build_experiment004_frozen_mixtures.py --train 1200 --eval 300
-
-Important: --eval is a single new-model evaluation resource. Do not iterate models
-or masks against it. Missingness distribution is prespecified independently of test.
-"""
+"""Experiment 004: frozen-group-only synthetic mixtures, with observed-cell labels."""
 from __future__ import annotations
 import argparse
 import hashlib

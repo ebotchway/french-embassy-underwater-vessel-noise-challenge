@@ -1,8 +1,4 @@
-"""Reproducible audit of Zindi Underwater Vessel Noise Challenge files.
-Run: pip install pandas numpy pyarrow
-     python audit_underwater_challenge.py --data-dir /path/to/files
-No fitting or calibration is performed on Test.csv.
-"""
+"""Reproducible audit of Zindi Underwater Vessel Noise Challenge files."""
 import argparse, io, zipfile, hashlib
 from pathlib import Path
 import numpy as np

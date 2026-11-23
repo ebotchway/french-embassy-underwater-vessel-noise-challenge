@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""Experiment 005 precursor: training-only real-acoustic domain audit.
-
-Reads only exp004_train background windows and exp004_train vessel minute band powers.
-Does not read exp004_eval acoustic measurements, original validation, sealed station
-holdouts, Zindi Test.csv, or any labels. Spectral comparisons are RELATIVE SHAPE
-only: VTUAD digital power and South African levels have no common calibration.
-
-Run from project root:
- python scripts/audit_real_acoustic_development_v1.py --self-test-only
- python scripts/audit_real_acoustic_development_v1.py --max-runs-per-station 120
-"""
+"""Experiment 005 precursor: training-only real-acoustic domain audit."""
 from __future__ import annotations
 import argparse
 import hashlib

@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
-"""Phase 3 matched counterfactual stress study (development only).
-
-Run from the repository root. Import the existing v1/v2 scripts without modifying them.
-Fit two prespecified Random Forest models on *synthetic_v2/train only*:
-  1. submitted preprocessing: per-window max shift
-  2. original synthetic preprocessing: no additional shift
-Use *validation-only* background runs and hull-isolated VTUAD sources to
-construct matched zero/positive examples with event durations 1-4 minutes.
-For missing-minute tests, recompute the target on the observed cells, rather
-than reusing the complete-window target. Test values/labels are NEVER used.
-The source validation pool was previously inspected in Experiment 002;
-this is a *development robustness audit*, not an independent holdout.
-"""
+"""Phase 3 matched counterfactual stress study (development only)."""
 from __future__ import annotations
 
 import argparse

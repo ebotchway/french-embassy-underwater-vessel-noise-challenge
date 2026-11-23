@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only data-to-model alignment audit for Synthetic Experiment 002.
-
-Reads source provenance and saved validation predictions. Never accesses Zindi Test.csv.
-Source-group results are descriptive, not causal, and do not prove natural-vessel detection.
-"""
+"""Read-only data-to-model alignment audit for Synthetic Experiment 002."""
 from __future__ import annotations
 import argparse
 import json

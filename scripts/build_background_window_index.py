@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Index conservative 15-observation acoustic windows; never reads test data or acoustic levels.
-
-Rows within a Parquet file are referenced by their zero-based physical row positions.
-This is a candidate index, not a calibration or waveform-quality certification.
-"""
+"""Index conservative 15-observation acoustic windows; never reads test data or acoustic levels."""
 import argparse
 import json
 from pathlib import Path

@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Conservative disk cleanup and Zenodo VTUAD archive restoration.
-
-Python standard library only. Run from repository root. No automatic removal of
-source archives, extracted WAVs, validation partitions or scientific results.
-"""
+"""Conservative disk cleanup and Zenodo VTUAD archive restoration."""
 import argparse
 import hashlib
 import json

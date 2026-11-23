@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
-"""Build a verified-coordinate station excursion map, never a vessel-density map.
-
-Coordinates MUST be manually verified from original reliable monitoring site
-metadata. The manuscript assembler creates a blank template to complete.
-If any coordinate/evidence is missing, fail before drawing. No basemap, station
-interpolation, or physical sound pressure calibration is asserted.
-
-  python scripts/map_verified_station_acoustic_excursions_v1.py --self-test-only
-  python scripts/map_verified_station_acoustic_excursions_v1.py
-"""
+"""Build a verified-coordinate station excursion map, never a vessel-density map."""
 from __future__ import annotations
 import argparse
 import hashlib
