@@ -1,6 +1,6 @@
 # External Data Disclosure (Ready to Post on Zindi)
 
-**Status:** NOT YET POSTED. Post in the Zindi competition discussion board, then record the URL and timestamp below.
+**Status:** POSTED on Zindi (23 Nov 2026, 10:50 UTC — Discussion #36419).
 
 ---
 

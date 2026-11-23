@@ -1,17 +1,17 @@
 {
   "overleaf_dir": "deliverables/overleaf_manuscript",
   "zip_path": "deliverables/overleaf_manuscript/overleaf_research_manuscript.zip",
-  "zip_bytes": 1559837,
-  "zip_sha256": "37aa4362ac2dedfe5bde1be2ef1292c1a4177ad472836f6a235acd8844c62c74",
+  "zip_bytes": 1559850,
+  "zip_sha256": "807c15483d09e16a4df53cde0775be98cbba98e9ae0ed62bdc48b222d9ca8d74",
   "zip_entries": 10,
-  "main_tex_sha256": "67052792d84617109c46d4dc6f42212a290b9dbd9762eccb431998ae12db36d9",
+  "main_tex_sha256": "d694406e52e40be5d43972fc83694b829ab5a9a9aaab89079b26640c76dc3b21",
   "references_bib_sha256": "6fbabd08acbc029a0b19088707540b2e6f5a457f8268a6454ab352f256b2fd18",
   "validation": {
     "figures_verified": 7,
     "labels_verified": 18,
     "citations_verified": 17,
     "bib_entries": 17,
-    "approx_body_words": 3678
+    "approx_body_words": 3684
   },
   "figures": {
     "fig1_sa_real_acoustics.png": {
@@ -57,10 +57,16 @@
       "sha256": "5686b280baae9b496ea7e624cf8fbf4e416f41c0e43094ce03d423c97b5764ec"
     }
   },
+  "code_zip_path": "deliverables/overleaf_manuscript/research_and_modeling_code_final.zip",
+  "code_zip_bytes": 1775406,
+  "code_zip_sha256": "ebd70b189e9802bed2b72fad0ffd6481c05a58b1dc30da32432c6f9c505b8cf3",
+  "code_zip_entries": 43,
+  "code_zip_scripts": 31,
+  "code_zip_self_test": "PASS",
   "pdf_path": "deliverables/overleaf_manuscript/research_manuscript_latex.pdf",
   "pdf_pages": 10,
-  "pdf_bytes": 1991552,
-  "pdf_sha256": "e59f0eb825e37e004e0c7261eb2bc44c56c72052b7d389e0c648b04e0068e4ea",
+  "pdf_bytes": 1991175,
+  "pdf_sha256": "691b429ad38611a0537a0d151157a0e77d581f8c694001d5c44cc6efebd3d515",
   "overfull_hbox_count": 0,
   "overfull_hbox_lines": []
 }

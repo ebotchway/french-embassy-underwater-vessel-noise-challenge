@@ -13,7 +13,8 @@ Reproducible acoustic analysis and source-disjoint synthetic modelling for the Z
 - `data/` — competition archive (`data/zindi/`), local VTUAD `v1.3.0` (`525` WAVs), HearMyShip (`96` WAVs), 2s extracted parquets (`data/processed/`), and leak-free splits (`data/synthetic/modeling_v2/`).
 - `notebooks/` — [01_south_african_acoustic_eda.ipynb](notebooks/01_south_african_acoustic_eda.ipynb) (EDA, Finding -> Choice log, Experiments 001–007) and [02_vessel_noise_modeling.ipynb](notebooks/02_vessel_noise_modeling.ipynb) (live deterministic 11-model benchmark & submission sanity).
 - `scripts/` — audit, extraction, simulation, feature, deterministic training, and deliverable scripts.
-- `deliverables/research_submission/` — V6 manuscript (`research_manuscript.pdf`, `5` pages) and verified clean-copy code archive (`research_code_v6.zip`, `17` scripts).
+- `deliverables/overleaf_manuscript/` — APA 7th LaTeX manuscript (`research_manuscript_latex.pdf`, `10` pages), Overleaf upload archive (`overleaf_research_manuscript.zip`), and unified verified code archive (`research_and_modeling_code_final.zip`, `31` scripts + `2` notebooks).
+- `deliverables/research_submission/` — Legacy V6 descriptive manuscript (`research_manuscript.pdf`, `5` pages) and clean-copy V6 code archive (`research_code_v6.zip`, `17` scripts).
 - `submissions/candidate_v2_ensemble.csv` — strictly inference-only `Test.csv` predictions (`1,500` rows).
 - `docs/` — external-data disclosure, organizer map clarification, submission register, and protocols.
 

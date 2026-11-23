@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
+import py_compile
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -33,6 +36,7 @@ BIB_FILE = OVERLEAF_DIR / "references.bib"
 README_FILE = OVERLEAF_DIR / "README_OVERLEAF.md"
 MANIFEST_JSON = OVERLEAF_DIR / "OVERLEAF_MANIFEST.json"
 OVERLEAF_ZIP = OVERLEAF_DIR / "overleaf_research_manuscript.zip"
+CODE_ZIP = OVERLEAF_DIR / "research_and_modeling_code_final.zip"
 PDF_FILE = OVERLEAF_DIR / "research_manuscript_latex.pdf"
 
 EXACT_CENTRES = 10.0 ** (1.5 + 0.1 * np.arange(25, dtype=np.float64))
@@ -1047,7 +1051,7 @@ Releasing recorder calibration tables, exact deployment dates, and synchronized 
 
 All analyses, external datasets, and submission archives follow strict provenance and anti-leakage controls:
 \begin{{itemize}}
-    \item \textbf{{Research verification archive (V6):}} Running \path{{scripts/build_submission_deliverables.py}} \texttt{{-{{}}-verify-only}} in an isolated temporary folder compiles all 17 archived analysis scripts inside \path{{research_code_v6.zip}} ({v6_verif['code_archive']['bytes']} bytes, SHA-256 \texttt{{{v6_verif['code_archive']['sha256'][:16]}...}}) and regenerates Figure~2 plus all six descriptive and contrast-experiment CSV tables byte-for-byte without bundling raw audio.
+    \item \textbf{{Unified verification archives:}} The complete runnable package \path{{research_and_modeling_code_final.zip}} (31 verified scripts, both notebooks, and LaTeX sources, $<10$\,MB, zero raw audio or competition data) complements \path{{research_code_v6.zip}} ({v6_verif['code_archive']['bytes']} bytes, SHA-256 \texttt{{{v6_verif['code_archive']['sha256'][:16]}...}}), whose 17 science scripts pass isolated clean-copy regeneration of Figure~2 and six CSV tables via \texttt{{-{{}}-verify-only}}.
     \item \textbf{{Deterministic modeling verification (Modeling~v2):}} Dual-subprocess checks confirmed bit-exact repeatability ($\max|\Delta\hat{{y}}| = 0.0$, digest \texttt{{c58e79c022eb438d}}) across all seven learned families under 126 pinned dependencies (\path{{requirements.txt}}, zero AutoML). Both \path{{notebooks/01_south_african_acoustic_eda.ipynb}} and \path{{notebooks/02_vessel_noise_modeling.ipynb}} execute end-to-end with zero errors, exporting predictions to \path{{submissions/candidate_v2_ensemble.csv}}.
     \item \textbf{{Competition compliance:}} \texttt{{Test.csv}} remained strictly inference-only throughout; public external-data disclosures for VTUAD v1.3.0 and HearMyShip (\path{{docs/EXTERNAL_DATA_DISCLOSURE.md}}) and my site-map clarification (\path{{docs/ORGANIZER_MAP_CLARIFICATION.md}}) accompany the archive.
 \end{{itemize}}
@@ -1070,7 +1074,7 @@ def write_readme_overleaf(path: Path) -> None:
 1. Upload `overleaf_research_manuscript.zip` directly in Overleaf (**New Project -> Upload Project**).
 2. Set **Menu -> Compiler** to **`pdfLaTeX`** (Overleaf automatically runs **`biber`** for `biblatex` `style=apa` 7th-edition formatting).
 3. `main.tex` is already authored as `Prepared by Emmanuel Kwaku Botchway` and compiles cleanly in Overleaf or locally via `python scripts/build_overleaf_manuscript.py --compile-pdf`.
-4. Confirm the exported PDF renders between **4 and 10 pages** and is `< 10 MB` before uploading to Zindi separately from `research_code_v6.zip`.
+4. Confirm the exported PDF renders between **4 and 10 pages** and is `< 10 MB` before uploading to Zindi alongside `research_and_modeling_code_final.zip`.
 """
     path.write_text(txt, encoding="utf-8")
 
@@ -1238,7 +1242,131 @@ def compile_local_pdf(overleaf_dir: Path, out_pdf: Path) -> dict:
     }
 
 
-def build_zip_and_manifest(fig_info: dict, validation_info: dict, pdf_info: dict | None = None) -> dict:
+def verify_code_archive(zip_path: Path) -> dict:
+    """Extract unified code ZIP in isolation, compile all 31 scripts, parse notebooks, and run deterministic self-test."""
+    assert zip_path.is_file(), f"Missing code archive: {zip_path}"
+    zip_bytes = zip_path.stat().st_size
+    assert zip_bytes < 10_000_000, f"Code archive exceeds 10 MB: {zip_bytes}"
+
+    banned_tokens = (".wav", ".parquet", ".npz", ".joblib", ".ds_store", "__macosx", "test.csv", "south_african_real_acoustics.zip")
+    with zipfile.ZipFile(zip_path) as zf:
+        names = sorted(zf.namelist())
+    for n in names:
+        low = n.lower()
+        assert not any(tok in low for tok in banned_tokens), f"Prohibited entry in code archive: {n}"
+
+    with tempfile.TemporaryDirectory(prefix="code_zip_verify_") as tmp:
+        workdir = Path(tmp)
+        with zipfile.ZipFile(zip_path) as zf:
+            zf.extractall(workdir)
+
+        py_files = sorted((workdir / "scripts").glob("*.py"))
+        assert len(py_files) == 31, f"Expected 31 extracted scripts, got {len(py_files)}"
+        for py in py_files:
+            py_compile.compile(str(py), doraise=True)
+
+        nb_files = sorted((workdir / "notebooks").glob("*.ipynb"))
+        assert len(nb_files) == 2, f"Expected 2 notebooks, got {len(nb_files)}"
+        for nb_p in nb_files:
+            nb = json.loads(nb_p.read_text(encoding="utf-8"))
+            assert len(nb.get("cells", [])) > 0, f"Empty notebook: {nb_p.name}"
+
+        res = subprocess.run(
+            [sys.executable, "scripts/modeling_v2_train.py", "--self-test-only"],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+        )
+        assert res.returncode == 0 and "PASS" in res.stdout, (
+            f"Clean-copy modeling_v2_train.py --self-test-only failed:\n{res.stdout}\n{res.stderr}"
+        )
+
+    return {
+        "code_zip_path": str(zip_path.relative_to(ROOT)),
+        "code_zip_bytes": zip_bytes,
+        "code_zip_sha256": _sha256(zip_path),
+        "code_zip_entries": len(names),
+        "code_zip_scripts": 31,
+        "code_zip_self_test": "PASS",
+    }
+
+
+def build_unified_code_archive(out_zip: Path) -> dict:
+    """Build unified <10 MB runnable code + notebooks + TeX archive combining V6 and Modeling v2."""
+    v6_zip = ROOT / "deliverables/research_submission/research_code_v6.zip"
+    assert v6_zip.is_file(), f"Missing V6 archive: {v6_zip}"
+    with zipfile.ZipFile(v6_zip) as zf:
+        v6_scripts = [n for n in zf.namelist() if n.startswith("scripts/") and n.endswith(".py")]
+
+    extra_scripts = [
+        "scripts/extract_external_decidecade.py",
+        "scripts/extract_vtuad_band_features.py",
+        "scripts/fetch_hearmyship_sample.py",
+        "scripts/download_hearmyship.py",
+        "scripts/build_vtuad_source_splits_v2.py",
+        "scripts/apply_vtuad_source_split_v2.py",
+        "scripts/verify_publisher_assets_v2.py",
+        "scripts/modeling_v2_features.py",
+        "scripts/modeling_v2_simulator.py",
+        "scripts/modeling_v2_train.py",
+        "scripts/build_modeling_notebook_02.py",
+        "scripts/polish_research_notebook_01.py",
+        "scripts/build_submission_deliverables.py",
+        "scripts/build_overleaf_manuscript.py",
+    ]
+    all_script_rels = sorted(set(v6_scripts + extra_scripts))
+    assert len(all_script_rels) == 31, f"Expected 31 unique scripts, got {len(all_script_rels)}"
+
+    # Verify via AST that no local scripts/*.py dependency is missing
+    available_stems = {p.stem for p in (ROOT / "scripts").glob("*.py")}
+    bundled_stems = {Path(r).stem for r in all_script_rels}
+    missing_local = set()
+    for rel in all_script_rels:
+        tree = ast.parse((ROOT / rel).read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    top = alias.name.split(".")[0]
+                    if top in available_stems and top not in bundled_stems:
+                        missing_local.add(top)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                top = node.module.split(".")[0]
+                if top in available_stems and top not in bundled_stems:
+                    missing_local.add(top)
+    assert not missing_local, f"Missing transitive local script imports: {sorted(missing_local)}"
+
+    files_to_bundle: list[tuple[Path, str]] = [(ROOT / rel, rel) for rel in all_script_rels]
+    files_to_bundle.extend([
+        (ROOT / "README.md", "README.md"),
+        (ROOT / "requirements.txt", "requirements.txt"),
+        (ROOT / "docs/EXTERNAL_DATA_DISCLOSURE.md", "docs/EXTERNAL_DATA_DISCLOSURE.md"),
+        (ROOT / "docs/ORGANIZER_MAP_CLARIFICATION.md", "docs/ORGANIZER_MAP_CLARIFICATION.md"),
+        (ROOT / "docs/protocols/RESEARCH_METHODS_AND_DISCLOSURE_GATES.md", "docs/protocols/RESEARCH_METHODS_AND_DISCLOSURE_GATES.md"),
+        (ROOT / "docs/protocols/EXPERIMENT007_PREDECLARED_PROTOCOL.md", "docs/protocols/EXPERIMENT007_PREDECLARED_PROTOCOL.md"),
+        (ROOT / "notebooks/01_south_african_acoustic_eda.ipynb", "notebooks/01_south_african_acoustic_eda.ipynb"),
+        (ROOT / "notebooks/02_vessel_noise_modeling.ipynb", "notebooks/02_vessel_noise_modeling.ipynb"),
+        (ROOT / "deliverables/research_submission/training_only_site_aggregates.csv", "site_context/training_only_site_aggregates.csv"),
+        (ROOT / "data/external/hearmyship/metadata/hearmyship_split_v1.csv", "metadata/hearmyship_split_v1.csv"),
+        (MAIN_TEX, "manuscript/main.tex"),
+        (BIB_FILE, "manuscript/references.bib"),
+    ])
+
+    tmp_zip = out_zip.with_suffix(".tmp.zip")
+    with zipfile.ZipFile(tmp_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for src, arc in files_to_bundle:
+            assert src.is_file(), f"Missing file for unified code archive: {src}"
+            zf.write(src, arcname=arc)
+    tmp_zip.replace(out_zip)
+
+    return verify_code_archive(out_zip)
+
+
+def build_zip_and_manifest(
+    fig_info: dict,
+    validation_info: dict,
+    code_info: dict | None = None,
+    pdf_info: dict | None = None,
+) -> dict:
     """Package Overleaf ZIP cleanly at deliverables/overleaf_manuscript/overleaf_research_manuscript.zip."""
     tmp_zip = OVERLEAF_ZIP.with_suffix(".tmp.zip")
     with zipfile.ZipFile(tmp_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -1265,6 +1393,8 @@ def build_zip_and_manifest(fig_info: dict, validation_info: dict, pdf_info: dict
         "validation": validation_info,
         "figures": fig_info,
     }
+    if code_info:
+        manifest.update(code_info)
     if pdf_info:
         manifest.update(pdf_info)
     MANIFEST_JSON.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -1272,7 +1402,7 @@ def build_zip_and_manifest(fig_info: dict, validation_info: dict, pdf_info: dict
 
 
 def verify_existing() -> dict:
-    """Verify existing Overleaf assets, ZIP integrity, and LaTeX syntax without rewriting."""
+    """Verify existing Overleaf assets, ZIP integrity, unified code archive, and LaTeX syntax without rewriting."""
     for p in (MAIN_TEX, BIB_FILE, README_FILE, OVERLEAF_ZIP, MANIFEST_JSON):
         assert p.is_file(), f"Missing Overleaf artifact: {p}"
     val_info = validate_overleaf_package(MAIN_TEX, BIB_FILE, FIG_DIR)
@@ -1282,6 +1412,12 @@ def verify_existing() -> dict:
     assert _sha256(MAIN_TEX) == rec["main_tex_sha256"]
     assert _sha256(BIB_FILE) == rec["references_bib_sha256"]
     out = {"status": "PASS", "verify_only": True, **val_info, "zip_bytes": rec["zip_bytes"], "zip_sha256": rec["zip_sha256"]}
+    if "code_zip_path" in rec:
+        code_p = ROOT / rec["code_zip_path"]
+        code_verif = verify_code_archive(code_p)
+        assert code_verif["code_zip_bytes"] == rec["code_zip_bytes"]
+        assert code_verif["code_zip_sha256"] == rec["code_zip_sha256"]
+        out.update(code_verif)
     if "pdf_path" in rec:
         pdf_p = ROOT / rec["pdf_path"]
         assert pdf_p.is_file(), f"Missing compiled PDF: {pdf_p}"
@@ -1311,8 +1447,9 @@ def main() -> None:
     build_main_tex(MAIN_TEX)
     write_readme_overleaf(README_FILE)
     val_info = validate_overleaf_package(MAIN_TEX, BIB_FILE, FIG_DIR)
+    code_info = build_unified_code_archive(CODE_ZIP)
     pdf_info = compile_local_pdf(OVERLEAF_DIR, PDF_FILE) if args.compile_pdf else None
-    manifest = build_zip_and_manifest(fig_info, val_info, pdf_info=pdf_info)
+    manifest = build_zip_and_manifest(fig_info, val_info, code_info=code_info, pdf_info=pdf_info)
     print(json.dumps(manifest, indent=2))
 
 
