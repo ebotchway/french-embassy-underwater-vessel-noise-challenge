@@ -2,8 +2,8 @@
   "status": "VERIFIED_LOCAL_CANDIDATES_HOLD_FOR_ZINDI_ACTIONS",
   "code_archive": {
     "path": "deliverables/research_submission/research_code_v6.zip",
-    "bytes": 79563,
-    "sha256": "02431f367aa464a2cebf24e70bac5aeb22775b000f2e4224834e7838d9568eb1",
+    "bytes": 79620,
+    "sha256": "6aad3e47fe4e5ec111c776c72ed853828f0400ae7e3565624d4171b8e00cb32b",
     "entries": 20
   },
   "clean_copy_verification": {
@@ -22,9 +22,9 @@
   },
   "research_pdf": {
     "path": "deliverables/research_submission/research_manuscript.pdf",
-    "bytes": 671917,
+    "bytes": 671900,
     "pages": 5,
-    "sha256": "7d64b4d7c796b8a26802a9653870678e7fd5ae9c2565d7d057a5a28247b9c039",
+    "sha256": "89c86ea0de89e781c21e8e742f2bf6fbbcd87239fbd445d1c23ccc176e67519a",
     "figure4_fix_verified": true
   }
 }

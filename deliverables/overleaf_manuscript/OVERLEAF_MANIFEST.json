@@ -1,0 +1,65 @@
+{
+  "overleaf_dir": "deliverables/overleaf_manuscript",
+  "zip_path": "deliverables/overleaf_manuscript/overleaf_research_manuscript.zip",
+  "zip_bytes": 1560204,
+  "zip_sha256": "d2f646a8a0c8fcbee3ec7f82fa3b9161bdcc4355fdb2e55cdc4fd43f9dec1311",
+  "zip_entries": 10,
+  "main_tex_sha256": "380d98ff9c3f2ce21967c7e7ffff81ed2ec1848c2c941849c6a1dfbe20f6b9c2",
+  "references_bib_sha256": "6fbabd08acbc029a0b19088707540b2e6f5a457f8268a6454ab352f256b2fd18",
+  "validation": {
+    "figures_verified": 7,
+    "labels_verified": 14,
+    "citations_verified": 17,
+    "bib_entries": 17,
+    "approx_body_words": 3685
+  },
+  "figures": {
+    "fig1_sa_real_acoustics.png": {
+      "bytes": 166583,
+      "width": 3934,
+      "height": 1114,
+      "sha256": "d1127ad6e6a977b30b1736c11bdcb4b89b331a689b2aa728283f5064d79d38d3"
+    },
+    "fig2_site_context_map.png": {
+      "bytes": 210460,
+      "width": 2366,
+      "height": 1198,
+      "sha256": "8d050bf728d3231dac8c43511468d30cd4029bd8336e0eb3bc77158bc20bc77d"
+    },
+    "fig3_spectral_structure_mismatch.png": {
+      "bytes": 413690,
+      "width": 3814,
+      "height": 1264,
+      "sha256": "9d388296993e9ea07fe3a69aa2b5e2c078202adcdcb017a54f8ec13337b8e185"
+    },
+    "fig4_domain_gap_exp007.png": {
+      "bytes": 157208,
+      "width": 3754,
+      "height": 1144,
+      "sha256": "397671c9fcfe5da6e29e506c7238ec0fd7db06a85a3033c24a35417e47cba9bb"
+    },
+    "fig5_benchmark_11_models.png": {
+      "bytes": 148046,
+      "width": 3934,
+      "height": 1294,
+      "sha256": "86524c21112d0961371f0c8d3d85fb682288e4c2ef86f7ba79636c89c5fbe835"
+    },
+    "fig6_interpretability_and_stations.png": {
+      "bytes": 217513,
+      "width": 3934,
+      "height": 1354,
+      "sha256": "908ca0198032ae5497c7cb638a6bf99e11d9d85825c4b4753b964a297aaa2253"
+    },
+    "fig7_holdout_diagnostics_and_test.png": {
+      "bytes": 415640,
+      "width": 4104,
+      "height": 1144,
+      "sha256": "5686b280baae9b496ea7e624cf8fbf4e416f41c0e43094ce03d423c97b5764ec"
+    }
+  },
+  "pdf_path": "deliverables/overleaf_manuscript/research_manuscript_latex.pdf",
+  "pdf_pages": 9,
+  "pdf_bytes": 2063355,
+  "pdf_sha256": "a888e9e3bc0e0fdbc450e7bf990229d5dcb005c9560bb094b571af500fd9b236",
+  "overfull_hbox_count": 3
+}
