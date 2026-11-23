@@ -20,5 +20,5 @@ I am using **VTUAD (rebuilt)** — an AIS-auto-labelled vessel-type underwater a
 
 ---
 
-- **Zindi Discussion URL:** NOT YET RECORDED
-- **Posted UTC:** NOT YET RECORDED
+- **Zindi Discussion URL:** [Done](https://zindi.world/competitions/french-embassy-underwater-vessel-noise-challenge/discussions/36419)
+- **Posted UTC:** 23 Nov 2026, 10:50 

@@ -1,6 +1,6 @@
 # Organizer Clarification Request — Spatial Site-Context Map
 
-**Status:** DRAFT — not sent.
+**Status:** Posted: 23 Nov 2026, 10:54.
 
 ---
 
