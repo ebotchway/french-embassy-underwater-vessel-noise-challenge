@@ -24,8 +24,8 @@ Updated: 23 November 2026. Status: **SUBMISSION #3 (`Candidate v4`), INTERNATION
 
 ## Research Write-up, Notebooks, Standards & Reproducibility Track
 
-- **Primary Research PDF (`deliverables/overleaf_manuscript/research_manuscript_latex.pdf`):** `9` pages (`2,717,702` bytes, `<10 MB`), `0` `Overfull \hbox`, `0` undefined refs/citations, `28/28` APA 7th citations, `19/19` labeled equations/tables/figures, SHA-256 `63214b58e65bb976f49052c14759f5ad5e4686b75f8337c022291d60df64c25a`.
-- **Overleaf Upload ZIP (`deliverables/overleaf_manuscript/overleaf_research_manuscript.zip`):** `2,167,622` bytes (`10` clean entries), SHA-256 `ff39520eefcfb78ef5c990de26eb37c5edd8e7c0816b477a6a79065a29ae5995`.
+- **Primary Research PDF (`deliverables/overleaf_manuscript/research_manuscript_latex.pdf`):** `10` pages (`2,925,990` bytes, `<10 MB`), `0` `Overfull \hbox`, `0` undefined refs/citations, `28/28` APA 7th citations, `23/23` labeled equations/tables/figures (`8` figures, `7` tables, `8` equations), SHA-256 `a231e766d2f192f77d640366c0d5f452076a028d0c8d73a06aa0add41c7686a2`.
+- **Overleaf Upload ZIP (`deliverables/overleaf_manuscript/overleaf_research_manuscript.zip`):** `2,338,992` bytes (`11` clean entries), SHA-256 `711ec5394c2d9fa61d796f7a5c8ad62f01800b575e283e286390227ff81e9448`.
 - **Unified Code Archive (`deliverables/overleaf_manuscript/research_and_modeling_code_final.zip`):** `< 10 MB`, packages `40` verified scripts, all `3` notebooks (`01`, `02`, `03`), documentation, and TeX sources; clean-copy extraction passes `py_compile` and `--self-test-only` across `v2`, `v3`, `v4`, and `standardized_evaluation_suite` (canonical hash tracked in `deliverables/overleaf_manuscript/OVERLEAF_MANIFEST.json` and `reports/reproducibility_manifest.json`).
 - **Legacy V6 Research Archive (`deliverables/research_submission/`):** Preserved (`5` pages, `research_code_v6.zip` SHA-256 `02431f367aa464a2cebf24e70bac5aeb22775b000f2e4224834e7838d9568eb1`).
 - **Notebooks (`notebooks/`):** `01_south_african_acoustic_eda.ipynb`, `02_vessel_noise_modeling.ipynb`, and newly executed `03_domain_generalization_v3_v4_and_standards.ipynb` (`notebooks/` scratch files cleaned).
