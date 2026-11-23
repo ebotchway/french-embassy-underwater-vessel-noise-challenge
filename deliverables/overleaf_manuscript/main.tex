@@ -1,6 +1,7 @@
 \documentclass[10pt,a4paper]{article}
 
-\usepackage[margin=0.68in]{geometry}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[top=0.78in,bottom=0.78in,left=0.80in,right=0.80in]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -12,9 +13,9 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs,tabularx,array}
 \usepackage{graphicx}
-\usepackage{float}
+\usepackage[section]{placeins}
 \usepackage{xcolor}
-\usepackage{microtype}
+\usepackage[protrusion=true,expansion=true]{microtype}
 \usepackage{enumitem}
 \usepackage{caption}
 \usepackage{titlesec}
@@ -23,139 +24,231 @@
 \definecolor{AccentBlue}{HTML}{0072B2}
 \definecolor{AccentOrange}{HTML}{D55E00}
 \hypersetup{colorlinks=true,linkcolor=AccentBlue,citecolor=AccentBlue,urlcolor=AccentBlue}
-\captionsetup{font=small,labelfont=bf,skip=4pt}
-\titlespacing*{\section}{0pt}{10pt}{4pt}
-\titlespacing*{\subsection}{0pt}{7pt}{3pt}
-\setlist[itemize]{leftmargin=1.4em,itemsep=2pt,topsep=2pt}
-\setlist[enumerate]{leftmargin=1.5em,itemsep=2pt,topsep=2pt}
 
-\title{\vspace{-1.1em}\Large\textbf{Acoustic Variability, Spectral Domain Shift, and Deterministic Vessel-Energy Modeling in South African Coastal Soundscapes}}
+\linespread{1.095}
+\setlength{\parskip}{4.5pt}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.16}
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\floatsep}{11pt plus 2pt minus 2pt}
+\setlength{\intextsep}{11pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.90}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.60}
+\setlength{\bibitemsep}{2.0pt}
+\renewcommand*{\bibfont}{\small}
 
-% TODO: Replace author name and affiliation before final compilation in Overleaf.
-\author{Research Write-Up Submission --- French Embassy Underwater Vessel Noise Challenge \\ \small Prepared for Zindi Research Evaluation Track}
-\date{23 November 2026}
+\AtBeginDocument{%
+  \setlength{\abovedisplayskip}{10pt plus 2pt minus 2pt}%
+  \setlength{\belowdisplayskip}{10pt plus 2pt minus 2pt}%
+  \setlength{\abovedisplayshortskip}{7pt plus 2pt minus 1pt}%
+  \setlength{\belowdisplayshortskip}{7pt plus 2pt minus 1pt}%
+}
+
+\tolerance=1200
+\emergencystretch=2em
+\hbadness=1500
+\widowpenalty=10000
+\clubpenalty=10000
+\displaywidowpenalty=10000
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+\setcounter{biburlnumpenalty}{9000}
+\def\UrlBreaks{\do\/\do-\do.}
+
+\captionsetup{font=small,labelfont=bf,skip=6pt,justification=justified,singlelinecheck=false}
+\titlespacing*{\section}{0pt}{13pt plus 3pt minus 2pt}{5pt}
+\titlespacing*{\subsection}{0pt}{9.5pt plus 2pt minus 1pt}{3.5pt}
+\setlist[itemize]{leftmargin=1.6em,itemsep=3pt,topsep=3.5pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=3pt,topsep=3.5pt,parsep=0pt}
 
 \begin{document}
-\maketitle
-\vspace{-1.0em}
 
-\begin{abstract}
-Monitoring anthropogenic shipping pressure in biodiverse coastal waters requires distinguishing vessel-radiated acoustic energy from uncalibrated ambient background variability. Using competition telemetry from the French Embassy Underwater Vessel Noise Challenge on Zindi, I audit 1,715,779 one-minute third-octave summaries across ten South African sites (25 bands from 31.6\,Hz to 7.94\,kHz) and resolve the severe generalization gap observed when my initial baseline (0.761536 public $1 - \mathrm{RMSE}$, 0.517533 diagnostic AUC) encountered field mixtures. This investigation proceeds in two linked stages. First, I establish a reproducible descriptive baseline across 460 training-only recording runs from six validated sites, documenting wide inter-station source-export offsets (medians 61.520 to 90.604 uncalibrated dB), within-window variability (1.123 to 3.623\,dB), peak-referenced spectral shape distances to Ocean Networks Canada VTUAD v1.3.0 recordings (7.477 to 26.202\,dB RMS), and Experiment~007 false-alarm trade-offs (120 paired scenarios, 840 cases). Second, resolving the phase-3 band-edge mismatch and max-level distortion audit, I align external extraction from all 525 VTUAD clips and 96 HearMyShip small-craft recordings strictly to two-second Hann base-10 deci-decade periodograms, inject propagation warps, closest-point-of-approach (CPA) trajectories, and observed \texttt{Test.csv} missing-minute masks, and benchmark 11 deterministic model families. A leak-free, bit-exact 5-fold simplex ensemble (\texttt{CNN2D} weight 0.516 plus four GBDT families) lifts validation $1 - \mathrm{RMSE}$ from 0.8270 (legacy random forest) to 0.8747 (ROC AUC 0.9725) and generalizes without collapse to completely unseen holdout stations (Fish Hoek and Sea Point, $n=541$, $1 - \mathrm{RMSE} = 0.8833$, ROC AUC 0.9365). Crucially, I demonstrate why uncalibrated, asynchronously sampled total-sound summaries cannot validate a vessel-pressure map until calibration constants, verified coordinates, and clock-aligned vessel labels are provided.
+\begin{center}
+{\small\scshape\color{AccentBlue} Research Manuscript \enspace$\bullet$\enspace French Embassy Underwater Vessel Noise Challenge\par}
+\vspace{0.55em}
+{\Large\bfseries Acoustic Variability, Spectral Domain Shift, and Deterministic\\[0.22em] Vessel-Energy Modeling in South African Coastal Soundscapes\par}
+\vspace{0.75em}
+{\large\textbf{Prepared by Emmanuel Kwaku Botchway}\par}
+\vspace{0.30em}
+{\small Zindi Research Evaluation Track \enspace$\bullet$\enspace 23 November 2026\par}
+\end{center}
+\vspace{0.25em}
+\noindent\rule{\textwidth}{0.5pt}
+\vspace{0.35em}
 
-\medskip
-\noindent\textbf{Keywords:} underwater acoustics, anthropogenic ocean noise, domain shift, third-octave spectra, deterministic deep ensembles, South Africa.
-\end{abstract}
+\begin{center}
+{\large\bfseries Abstract}
+\end{center}
+\vspace{0.15em}
+
+\noindent\textbf{Objective:} Separating anthropogenic shipping energy from ambient ocean fluctuations in uncalibrated marine recordings is difficult without sensor calibration curves or synchronized vessel logs. Using coastal acoustic telemetry from ten South African stations, I diagnose why standard spectral classifiers degrade on unseen sites and develop a shift-invariant framework for estimating added vessel energy.
+
+\noindent\textbf{Methods:} I characterize 460 monitoring runs across six development sites with conditional run-bootstrap intervals, measure spectral shape differences against 525 Vessel-Type Underwater Acoustic Dataset (VTUAD) clips and 96 HearMyShip small-craft clips, and align feature extraction strictly to two-second Hann base-10 deci-decade periodograms. I then train 11 deterministic models on propagation-warped mixtures carrying observed test missingness masks and blend the strongest predictors with out-of-fold simplex weights.
+
+\noindent\textbf{Findings:} Removing window-maximum shifting, aligning spectral band edges, and combining gradient-boosted trees with a masked 2D residual network (\texttt{CNN2D}) raises unseen-station score $1-\mathrm{RMSE}$ from 0.8390 (\texttt{V1\_RF\_MaxShift}) to 0.8833 (\texttt{Ensemble\_v2}, ROC AUC 0.9365) across held-out Fish Hoek and Sea Point recordings ($n=541$), while lifting six-station validation score from 0.8270 to 0.8747 (ROC AUC 0.9725).
+
+\noindent\textbf{Boundaries:} Because the telemetry lacks per-hydrophone sensitivity constants, verified deployment coordinates, and ground-truth traffic logs, uncalibrated station summaries measure relative telemetry levels rather than a validated regional shipping-pressure map.
+
+\noindent\textbf{Keywords:} underwater acoustics, anthropogenic ocean noise, spectral domain shift, third-octave spectra, deterministic ensembles, South Africa.
+
+\vspace{0.20em}
+\noindent\rule{\textwidth}{0.5pt}
 
 \section{Introduction and Research Objectives}
 
-Underwater radiated noise from commercial shipping and coastal small craft elevates low- and mid-frequency ambient sound levels across global marine habitats, altering acoustic communication space and foraging behavior across marine fauna \parencite{duarte2021soundscape,wenz1962ambient}. Passive acoustic monitoring provides continuous empirical baselines \parencite{merchant2015measuring}, yet automated vessel quantification remains challenging in unlabelled coastal deployments where hydrophone calibration metadata, bathymetric propagation paths, and synchronized Automatic Identification System (AIS) tracks are unavailable \parencite{iso2017underwater}.
+Commercial shipping and coastal small craft elevate low- and mid-frequency underwater sound across global marine habitats, compressing biological communication space and altering marine animal behavior \parencite{duarte2021soundscape,wenz1962ambient}. Passive acoustic recorders supply long-term empirical baselines \parencite{merchant2015measuring}, yet automated vessel quantification remains fragile in coastal monitoring archives where hydrophone calibration curves, acoustic propagation paths, and Automatic Identification System (AIS) vessel logs are absent \parencite{iso2017underwater}.
 
-The Zindi French Embassy Underwater Vessel Noise Challenge provides multi-year third-octave acoustic telemetry from South African coastal monitoring stations \parencite{zindi2026challenge,zindi2026rules}. On the predictive track, models estimate two bounded quantities over 15-minute $\times$ 25-band telemetry matrices: the added-vessel energy fraction \texttt{share\_added\_vessel} $\in [0,1]$ (ranked strictly by $1 - \mathrm{RMSE}$) and a diagnostic presence score \texttt{score\_added\_vessel} $\in [0,1]$. On the research track, evaluators assess real South African empirical grounding, uncertainty quantification, feature interpretability, transparent limitation analysis, and spatial visualization \parencite{zindi2026rules}.
+The Zindi French Embassy Underwater Vessel Noise Challenge provides multi-year third-octave acoustic summaries from South African coastal stations \parencite{zindi2026challenge,zindi2026rules}. On the predictive track, participants estimate the added-vessel energy share \texttt{share\_added\_vessel} $\in [0,1]$ under the metric $1-\mathrm{RMSE}$ and output a vessel-presence score \texttt{score\_added\_vessel} $\in [0,1]$. On the research track, studies are evaluated on South African empirical evidence, uncertainty quantification, physical interpretability, limitation transparency, and spatial visualization \parencite{zindi2026rules}.
 
-Rigorous scientific reporting requires separating three quantities that are frequently conflated in machine-learning benchmarks: (1) \textbf{total recorded acoustic telemetry} exported in arbitrary recorder units, (2) \textbf{synthetically imposed energy fractions} defined relative to an additive external clip over observed bins, and (3) \textbf{independently verified natural vessel traffic}. My first leaderboard probe (Submission~001) scored 0.761536 public $1 - \mathrm{RMSE}$ and near-random 0.517533 diagnostic AUC despite achieving 0.112061 RMSE on clean synthetic splits, exposing structural flaws in spectral band edges, per-window max normalization, missing-minute interpolation, and unwarped training contrast.
+Sound scientific reporting separates three quantities that benchmarks often blur: total recorded sound exported in uncalibrated recorder units, synthetic energy fractions defined over observed mixture bins, and independently verified natural shipping activity. My initial leaderboard submission scored 0.761536 publicly ($1-\mathrm{RMSE}$) with a near-random 0.517533 diagnostic AUC despite scoring 0.112061 RMSE on clean internal splits, exposing critical mismatches in band edges, amplitude shifting, edge interpolation, and spectral contrast.
 
-This paper documents the end-to-end resolution of those failures and provides five concrete contributions:
+This paper resolves those failures and makes five contributions:
 \begin{enumerate}
-    \item A training-only, run-bootstrap characterization of acoustic levels, temporal variability, and robust station anomalies across 460 South African monitoring runs.
-    \item A non-interpolated spatial site-context figure anchored strictly at working candidate coordinates, paired with explicit evidentiary boundaries against mislabelling total sound as vessel pressure.
-    \item Empirical diagnosis of spectral-shape mismatch across VTUAD and HearMyShip external corpora, whole-minute \texttt{Test.csv} dropout profiles, and false-alarm costs of naive contrast augmentation (Experiment~007).
-    \item Exact alignment to starter-notebook two-second base-10 deci-decade extraction, global-offset-invariant physical features (138 dimensions invariant to $+37.5$\,dB shifts), and a bit-exact deterministic benchmark across 11 models including a masked 2D residual CNN.
-    \item Generalization verification on completely unseen South African stations (Fish Hoek and Sea Point) alongside reproducible code and verification archives.
+    \item \textbf{Baseline characterization:} Run-level acoustic medians, conditional bootstrap intervals, within-window temporal variability, and robust site anomalies across 460 South African monitoring runs.
+    \item \textbf{Bounded spatial reporting:} A non-interpolated map anchored at candidate coordinates with explicit provenance safeguards against misinterpreting total telemetry as vessel noise.
+    \item \textbf{Domain-shift audits:} Quantitative measurements of spectral-shape gaps across VTUAD and HearMyShip corpora, whole-minute test dropout geometry, and contrast-augmentation false alarms.
+    \item \textbf{Aligned deterministic modeling:} Exact two-second base-10 deci-decade extraction, 138 global-offset-invariant features, and a reproducible 11-model benchmark including a masked 2D residual CNN.
+    \item \textbf{Out-of-site verification:} Generalization checks across completely unseen South African stations (Fish Hoek and Sea Point) backed by verification archives.
 \end{enumerate}
 
 \section{Data Provenance, Integrity, and Leak-Free Partitioning}
 
 \subsection{South African Monitoring Archive}
-The organizer telemetry archive contains 1,715,779 one-minute rows spanning ten coastal South African sites \parencite{zindi2026challenge}. Raw station tables contain 62 nominal \texttt{TOL\_*} columns and metadata tokens (\texttt{site}, \texttt{recorder}, \texttt{t}, \texttt{dur}, \texttt{sample\_rate\_hz}). Auditing across all stations confirms zero duplicate timestamps, 100.00\% non-null completeness across the 25 competition bands (31.6--7943.3\,Hz), and 17 recorder configurations with recording cadence spanning 1--360\,s. Two sites (Cape Recife with 456 runs and Riy Banks) never reach 15 continuous minutes and are excluded cleanly, leaving 88,143 non-overlapping complete 15-minute windows across 18,169 continuous runs and eight usable stations. Crucially, \texttt{stations.csv} designates locations as working site-level candidates (including two unresolved candidate positions at Saldanha Bay), deployment dates are omitted, and acoustic levels represent uncalibrated source exports rather than physical sound pressure levels in dB\,re\,1\,$\mu\text{Pa}$ \parencite{iso2017underwater}.
+
+The competition archive contains 1,715,779 one-minute summaries spanning ten coastal South African sites \parencite{zindi2026challenge}. Raw station files record 62 nominal third-octave columns alongside recorder metadata and cadences ranging from 1\,s to 360\,s across 17 instrument configurations. Auditing the archive confirms zero duplicate timestamps and complete coverage across the 25 evaluation bands spanning 31.6\,Hz to 7.94\,kHz.
+
+Two sites (Cape Recife and Riy Banks) never reach 15 continuous minutes and are excluded before windowing, leaving 88,143 complete 15-minute non-overlapping windows across 18,169 continuous runs and eight usable stations. Station tables list working site-level candidate coordinates rather than fixed hydrophone positions (including two unresolved candidate points at Saldanha Bay), omit deployment dates, and report arbitrary recorder units rather than calibrated sound pressure levels in dB\,re\,1\,$\mu\text{Pa}$ \parencite{iso2017underwater}.
 
 \subsection{External Vessel Corpora and Integrity Verification}
-To construct controlled additive vessel mixtures without accessing \texttt{Test.csv} values, I incorporate two publicly accessible external underwater acoustic datasets:
+
+To build controlled vessel mixtures without touching \texttt{Test.csv}, I draw source vessel spectra from two public underwater acoustic datasets:
 \begin{itemize}
-    \item \textbf{VTUAD (rebuilt) v1.3.0:} Reconstructed from Ocean Networks Canada hydrophone \texttt{ICLISTENAF2523} (Strait of Georgia, 2016--2017, mono 32\,kHz WAV) with AIS vessel associations under CC BY 4.0 \parencite{yuan2026vtuad,onc2026oceans}. All 525 strict-interval WAV files passed SHA-256 verification against publisher checksums. Retaining metadata labels avoids contamination: 22 WAVs inside \texttt{vessel/} carry background labels and are isolated alongside 16 \texttt{background/} files (38 total), leaving 487 active vessel clips across 11 classes (tug 48.9\% of complete minutes). My local v1.3.0 snapshot is cited distinctly from the later v1.3.2 Zenodo record \parencite{yuan2026vtuad132}.
-    \item \textbf{HearMyShip coastal-craft corpus:} Coastal optical-acoustic recordings gathered by LABUST (University of Zagreb FER) and ANL (University of Haifa) under EU Horizon Europe Grant 101086340 \parencite{shipton2025hearmyship,hearmyship2025platform}. Because VTUAD over-represents large commercial tugs and offshore transits, I fetched a stratified sample of 96 valid mono 48\,kHz 24-bit WAV clips from the 1,149-entry catalog across eight small-craft and coastal vessel classes (Yacht: 23, Ferry: 23, Motorboat: 23, Tour boat: 21, Cargo Ship: 2, Fishing Vessel: 2, Auxiliary ship: 1, Tour Boat - Diving boat: 1; 24 Sailboat and Tour boat URLs returned HTTP 404).
+    \item \textbf{VTUAD v1.3.0:} Rebuilt from Ocean Networks Canada hydrophone \texttt{ICLISTENAF2523} in the Strait of Georgia (mono 32\,kHz WAV, 2016--2017) with AIS vessel associations under CC BY 4.0 \parencite{yuan2026vtuad,onc2026oceans}. All 525 strict-interval recordings passed SHA-256 verification against publisher checksums. Keeping metadata labels prevented label contamination because 22 clips stored in vessel folders carry background labels; isolating them alongside 16 explicit background clips yields 38 ambient references and 487 active vessel clips across 11 vessel classes (tugs represent 48.9\% of complete minutes). My local v1.3.0 copy is cited separately from the later v1.3.2 release \parencite{yuan2026vtuad132}.
+    \item \textbf{HearMyShip coastal small-craft corpus:} Coastal optical-acoustic field recordings collected by LABUST (University of Zagreb FER) and ANL (University of Haifa) under EU Horizon Europe Grant 101086340 \parencite{shipton2025hearmyship,hearmyship2025platform}. Because VTUAD under-represents nearshore recreational craft, I downloaded a stratified sample of 96 valid mono 48\,kHz 24-bit WAV clips from the 1,149-record catalog spanning eight categories (Yacht: 23, Ferry: 23, Motorboat: 23, Tour boat: 21, Cargo Ship: 2, Fishing Vessel: 2, Auxiliary ship: 1, Diving tour boat: 1; 24 additional URLs returned HTTP 404).
 \end{itemize}
 
 \subsection{Leak-Free Partitioning Design}
-Evaluating generalization to unseen acoustic environments requires preventing background run memorization, vessel hull leakage, and cross-site overfitting. Table~\ref{tab:inventory} summarizes both the descriptive V6 partition (\texttt{exp004\_train}) and the deterministic Modeling~v2 benchmark splits. Every training CV fold ($k \in \{0,\dots,4\}$), validation window (\texttt{val}), and unseen-station holdout (Fish Hoek + Sea Point) maintains strictly zero shared continuous background \texttt{run\_id}, zero shared VTUAD \texttt{hull\_id}, and zero shared HearMyShip vessel/passage group identifiers. \texttt{Test.csv} (1,500 rows) is touched strictly for read-only structural missingness profiling (48.3\% of rows omit whole minutes) and final frozen one-way inference.
 
-\begin{table}[tbp]
+Reliable generalization estimates require strict separation of continuous background runs, vessel hull identities, and coastal stations across splits. Table~\ref{tab:inventory} details the descriptive baseline partition and all predictive benchmark splits. Cross-validation folds ($k \in \{0,\dots,4\}$), the validation set (separated by 9--49 days between runs), and the unseen holdout stations share zero background \texttt{run\_id}, VTUAD \texttt{hull\_id}, or HearMyShip passage identifiers. The 1,500 evaluation windows in \texttt{Test.csv} remain isolated for read-only structural missingness checks and final frozen inference.
+
+\begin{table}[!htbp]
 \centering
-\caption{Data inventory and source-isolation audit across descriptive and predictive partitions.}
+\caption{Data inventory and source-isolation boundaries across descriptive and predictive partitions.}
 \label{tab:inventory}
-\footnotesize\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llllr@{}}
 \toprule
-Dataset / Partition & Temporal / Vessel Scope & Isolation Boundary & Extracted Units & Count \\
+Dataset / Partition & Temporal or Vessel Scope & Isolation Boundary & Extracted Units & Count \\
 \midrule
-SA Archive (Full) & 10 sites, 17 recorders & Excluded Cape Recife / Riy Banks & 1-min rows / 15-min win. & 1,715,779 / 88,143 \\
-SA Descriptive V6 & 6 dev. stations (\texttt{exp004\_train}) & 1 window/run, cap 120/site & Indexed runs & 460 \\
-VTUAD v1.3.0 & 172 active hulls + 38 bg. refs & Zero shared \texttt{hull\_id} & 2s min-rows / WAVs & 2,511 / 525 \\
-HearMyShip & 8 coastal/small-craft categories & Grouped by passage folder & 48\,kHz 2s clips (tr/va) & 96 (75 / 21) \\
-Model~v2 Train & 6 known SA stations & Disjoint 5-fold \texttt{run\_id} \& hulls & Synthetic windows (22.6\% zero) & 6,000 \\
-Model~v2 Val & 6 known SA stations & 9--49\,d run gap; unseen hulls & Synthetic windows (23.2\% zero) & 1,500 \\
-Model~v2 Holdout & Unseen Fish Hoek \& Sea Point & Unseen stations \& unseen hulls & Synthetic windows (20.0\% zero) & 541 \\
-Zindi \texttt{Test.csv} & Unknown SA sites/periods & Strictly inference-only & Evaluation windows & 1,500 \\
+South African Archive & 10 sites, 17 recorders & Excludes Cape Recife \& Riy Banks & 1-minute rows / 15-minute windows & 1,715,779 / 88,143 \\
+Descriptive Baseline Split & 6 development stations & 1 window per run, capped at 120/site & Indexed monitoring runs & 460 \\
+VTUAD v1.3.0 & 172 active hulls + 38 bg. & Disjoint \texttt{hull\_id} groups & 2s minute rows / WAV files & 2,511 / 525 \\
+HearMyShip & 8 coastal craft classes & Grouped by vessel passage & 48\,kHz clips (75 train / 21 val) & 96 (75 / 21) \\
+Benchmark Training & 6 known SA stations & 5-fold disjoint runs and hulls & Synthetic windows (22.6\% zero) & 6,000 \\
+Benchmark Validation & 6 known SA stations & 9--49 day gap; unseen hulls & Synthetic windows (23.2\% zero) & 1,500 \\
+Unseen Station Holdout & Fish Hoek \& Sea Point & Unseen stations and unseen hulls & Synthetic windows (20.0\% zero) & 541 \\
+Zindi Evaluation Set & Unknown SA deployments & Strictly inference-only & Evaluation windows & 1,500 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\section{Methodology: Signal Processing, Physics Simulation, and Ensembles}
+\section{Methodology: Spectral Extraction, Simulation, and Ensembles}
 
-\subsection{Reconciling Spectral Extraction: Two-Second Base-10 Deci-Decade Integration}
-Early exploratory runs (Notebook~01) applied Welch's method (\texttt{nperseg=32768}, 50\% overlap) with base-2 octave edges $f_c 2^{\pm 1/6}$ \parencite{welch1967fft}, creating minor bin overlap and bandwidth mismatches up to 2.6\,dB against the challenge telemetry specification. Resolving this discrepancy in Notebook~02, I match the organizer starter implementation across all 525 VTUAD and 96 HearMyShip WAVs: waveforms are segmented into non-overlapping $T_{\mathrm{seg}}=2$\,s Hann-windowed frames (\texttt{detrend='constant'}), converted to one-sided power spectral density $S(f)$ with bin spacing $\Delta f = 0.5$\,Hz, and integrated strictly across base-10 deci-decade bands \parencite{zindi2026rules}:
+\subsection{Two-Second Base-10 Deci-Decade Spectral Alignment}
+
+My initial exploratory pipeline estimated band power via Welch's method (\texttt{nperseg=32768}, 50\% overlap) over base-2 third-octave boundaries $f_c 2^{\pm 1/6}$ \parencite{welch1967fft}, creating minor bin overlap and bandwidth offsets up to 2.6\,dB relative to the challenge specification. To eliminate that mismatch across all 525 VTUAD and 96 HearMyShip audio recordings, the aligned pipeline segments waveforms into non-overlapping $T_{\mathrm{seg}}=2$\,s Hann-windowed frames (\texttt{detrend='constant'}) with frequency resolution $\Delta f = 0.5$\,Hz, and integrates the one-sided power spectral density $S(f)$ over exact base-10 deci-decade bands \parencite{zindi2026rules}:
 \begin{equation}
 \label{eq:decidecade}
-f_k = 10^{1.5 + 0.1 k}, \quad k \in \{0,\dots,24\}, \qquad P_k = \Delta f \sum_{f \in [f_k 10^{-0.05},\, f_k 10^{0.05})} S(f), \quad \text{when } f_k 10^{0.05} \le \frac{f_s}{2}.
+f_k = 10^{1.5 + 0.1 k}, \qquad
+P_k = \Delta f \sum_{f \in [f_k 10^{-0.05},\, f_k 10^{0.05})} S(f), \qquad
+k \in \{0,\dots,24\},
 \end{equation}
-VTUAD segments are averaged across 30 consecutive frames per complete minute (2,511 rows), while 20\,s HearMyShip closest-point-of-approach (CPA) recordings yield exact 10-segment averages per clip. Absolute digital gain is discarded prior to mixing.
+where Equation~\eqref{eq:decidecade} integrates band $k$ whenever its upper edge satisfies $f_k 10^{0.05} \le f_s / 2$ for sampling rate $f_s$, $f_k$ is the $k$-th centre frequency in Hz, and $P_k$ is relative band power. VTUAD frames are averaged in blocks of 30 across complete minutes (2,511 minute rows), whereas 20\,s HearMyShip closest-point-of-approach (CPA) recordings yield exact 10-frame averages per clip after removing arbitrary digital gain.
 
-\subsection{Additive Linear-Energy Targets Under Observed Telemetry Masks}
-Let $B_{\mathrm{dB}}(t,b)$ be an observed $15 \times 25$ South African background matrix. Rather than shifting by $\max(B_{\mathrm{dB}})$, which injects spurious level dependencies whenever loud transients appear, linear power is computed relative to a fixed constant $R_0 = 100$\,dB: $B(t,b) = 10^{(B_{\mathrm{dB}}(t,b)-R_0)/10}$. Notice that any constant calibration offset $C$ cancels identically in linear energy ratios and centered log features. Given a nonnegative external vessel matrix $V_0(t,b)$ scaled by $\alpha = \frac{q \sum B}{(1-q) \sum V_0}$ for target $q \in [0,1]$, the mixture is $M(t,b) = B(t,b) + \alpha V_0(t,b)$. Under whole-minute telemetry dropout mask $\Omega \subseteq \{1,\dots,15\} \times \{1,\dots,25\}$, true observed target share is recomputed strictly over observed cells:
+\subsection{Descriptive Site Variability and Anomaly Metrics}
+
+Within the six-station training baseline, sampled run-window means $x_{is}$ exhibit distinct site distributions and dispersion scales. To compare relative excursions without assuming Gaussian tails, Equation~\eqref{eq:robust_z} defines each run's site-relative robust $z$-score:
 \begin{equation}
+\label{eq:robust_z}
+z_{is} = \frac{x_{is} - \operatorname{median}_s(x)}{1.4826\,\mathrm{MAD}_s(x)},
+\end{equation}
+where $\operatorname{median}_s(x)$ and $\mathrm{MAD}_s(x)$ are the site-specific sample median and median absolute deviation across runs $i$. Where sample dispersion cannot be estimated—specifically Durban, with a single recording run ($n=1$)—$z_{is}$ and conditional bootstrap confidence bounds remain explicitly undefined rather than zero-filled.
+
+\subsection{Additive Linear-Energy Mixtures Under Telemetry Dropouts}
+
+Given an observed $15 \times 25$ South African log-power background window $B_{\mathrm{dB}}(t,b)$ and a nonnegative external vessel template $V_0(t,b)$, per-window maximum shifting introduces artificial amplitude coupling whenever brief loud events occur. Instead, Equation~\eqref{eq:energy_mix} converts backgrounds relative to a fixed constant $R_0 = 100$\,dB, computes the scaling factor $\alpha$ for a target energy ratio $q \in [0,1]$, and sums background and vessel energies linearly:
+\begin{equation}
+\label{eq:energy_mix}
+B(t,b) = 10^{(B_{\mathrm{dB}}(t,b) - R_0)/10}, \qquad
+\alpha = \frac{q \sum_{t,b} B(t,b)}{(1 - q)\sum_{t,b} V_0(t,b)}, \qquad
+M(t,b) = B(t,b) + \alpha V_0(t,b).
+\end{equation}
+Because structural dropouts remove entire edge minutes in the evaluation set, Equation~\eqref{eq:share_target} restricts target supervision strictly to observed time-frequency entries $\Omega \subseteq \{1,\dots,15\} \times \{1,\dots,25\}$ while setting missing cells to \texttt{NaN}:
+\begin{align}
 \label{eq:share_target}
-y_{\mathrm{obs}} = \frac{\sum_{(t,b)\in \Omega} \alpha V_0(t,b)}{\sum_{(t,b)\in \Omega} \big(B(t,b) + \alpha V_0(t,b)\big)} \in [0,1], \qquad X(t,b) =
-\begin{cases}
-R_0 + 10\log_{10} \max(M(t,b), 10^{-30}), & (t,b) \in \Omega, \\
+y_{\mathrm{obs}} &= \frac{\sum_{(t,b)\in\Omega} \alpha V_0(t,b)}{\sum_{(t,b)\in\Omega} \big(B(t,b) + \alpha V_0(t,b)\big)} \in [0,1], \nonumber\\
+X(t,b) &= \begin{cases}
+R_0 + 10\log_{10}\!\max\!\big(M(t,b),\, 10^{-30}\big), & (t,b) \in \Omega, \\
 \mathrm{NaN}, & (t,b) \notin \Omega.
 \end{cases}
-\end{equation}
-Descriptive anomalies in Section~4.1 summarize sampled run means $x_{is}$ relative to each site's run median using normalized median absolute deviation: $z_{is} = (x_{is} - \operatorname{median}_s(x)) / (1.4826 \cdot \operatorname{MAD}_s(x))$, leaving Durban ($n=1$) cleanly undefined rather than zero-filled.
+\end{align}
+Notice that any constant site calibration offset $C$ cancels identically from linear ratios in Equation~\eqref{eq:share_target} as well as from median-centered predictors.
 
 \subsection{Propagation-Warped Trajectory Simulation}
-Audits in Experiments~005--007 established that naive flat insertion of Strait-of-Georgia spectra creates artificial spectral discontinuities relative to South African hydrophones. My Modeling~v2 simulator samples 22\% pure background ($y=0$) alongside positive mixtures spanning weak ($[0.003, 0.05]$), moderate ($[0.05, 0.35]$), strong ($[0.35, 0.90]$), and dominant ($[0.90, 0.992]$) regimes across four trajectory modes:
+
+Diagnostic contrast experiments revealed that raw insertion of Strait-of-Georgia spectra creates recognizable sensor mismatches relative to South African stations. To span realistic field mixtures, the trajectory generator draws 22\% background-only windows ($y=0$) alongside positive mixtures spanning weak ($[0.003, 0.05]$), moderate ($[0.05, 0.35]$), strong ($[0.35, 0.90]$), and dominant ($[0.90, 0.992]$) shares across four temporal profiles:
 \begin{enumerate}
-    \item \textbf{CPA passing bell (45\%):} Geometric spreading $g(t) \propto \big(1 + ((t-t_{\mathrm{cpa}})/w)^2\big)^{-p}$ ($w \in [1.2,4.2]$\,min, $p \in [0.85,1.35]$) combined with distance-dependent high-frequency absorption above 300\,Hz.
-    \item \textbf{Harbour entry/exit (27\%):} Tapered cosine transits occupying 2--12 contiguous minutes.
-    \item \textbf{Stationary continuous shipping (18\%):} All-15-minute presence with bounded random-walk drift ($\pm 4$\,dB), specifically targeting regimes where simple min-to-max contrast detectors fail.
-    \item \textbf{Native VTUAD progressions (10\%):} Unmodified multi-minute field sequences when $\ge 4$ minutes are available.
+    \item \textbf{CPA passing bells (45\%):} Geometric spreading $g(t) \propto \big(1 + ((t-t_{\mathrm{cpa}})/w)^2\big)^{-p}$ ($w \in [1.2, 4.2]$\,min, $p \in [0.85, 1.35]$) paired with distance-dependent high-frequency absorption above 300\,Hz.
+    \item \textbf{Harbour transits (27\%):} Tapered cosine entry and exit ramps spanning 2 to 12 contiguous minutes.
+    \item \textbf{Stationary continuous traffic (18\%):} Full-window presence modulated by a $\pm 4$\,dB random walk so detectors cannot rely solely on quiet-to-loud contrast within a window.
+    \item \textbf{Native multi-minute VTUAD sequences (10\%):} Field sequences drawn directly when four or more contiguous minutes exist.
 \end{enumerate}
-Every positive trajectory undergoes random propagation distortion ($\pm 6$\,dB/decade spectral tilt, cosine waveguide modal ripple up to 2.5\,dB, $\mathcal{N}(0,0.75)$\,dB minute flutter, and 35\% probability of $\beta \in [0.15,0.45]$ log-shape blending toward local station background color), plus structural whole-minute masking matching \texttt{Test.csv} probabilities (41.6\% \texttt{m01}, 6.7\% \texttt{m15}, 2.0\% interior).
+Each positive template receives random propagation perturbations ($\pm 6$\,dB/decade spectral tilt, cosine modal ripple up to 2.5\,dB, $\mathcal{N}(0, 0.75)$\,dB minute jitter, and 35\% probability of partial blending toward local station background shape) followed by observed \texttt{Test.csv} missing-minute masks (41.6\% \texttt{m01}, 6.7\% \texttt{m15}, 2.0\% interior).
 
-\subsection{Shift-Invariant Features, Dual-Head Architectures, and Bit-Exact Determinism}
-Because recorder calibrations across stations differ by nearly 30\,dB, every Modeling~v2 predictor depends solely on window-centered coordinates $\tilde{X} = X - \operatorname{nanmedian}_\Omega(X)$ and relative linear power $\tilde{E} = 10^{\tilde{X}/10}$ over observed entries $\Omega$. Adding any arbitrary scalar $+37.5$\,dB produces identical outputs to floating-point precision ($\max|\Delta f| = 2.95 \times 10^{-14}$). From $\tilde{X}$ and $\tilde{E}$, I engineer 138 mask-aware tabular features spanning four physical families:
+\subsection{Shift-Invariant Features, Dual-Head Architectures, and Determinism}
+
+Because uncalibrated station offsets differ by nearly 30\,dB, every predictor operates solely on window-centered coordinates $\tilde{X}(t,b) = X(t,b) - \operatorname{nanmedian}_\Omega(X)$ over observed entries $\Omega$. Adding any arbitrary scalar $+37.5$\,dB leaves every model output identical within floating-point rounding ($\max|\Delta f| = 2.95 \times 10^{-14}$). From these centered matrices, Equation~\eqref{eq:excess_share} defines relative linear energy $\tilde{E}(t,b)$ and the multi-quantile excess energy shares $s_q$ for $q \in \{5, 10, 15, 20, 25, 35, 50\}$:
+\begin{equation}
+\label{eq:excess_share}
+\tilde{E}(t,b) = 10^{\tilde{X}(t,b)/10}, \qquad
+s_q = \frac{\sum_{(t,b)\in\Omega} \max\!\big(\tilde{E}(t,b) - \hat{B}_q(b),\, 0\big)}{\sum_{(t,b)\in\Omega} \tilde{E}(t,b)},
+\end{equation}
+where $\hat{B}_q(b)$ denotes the $q$-th temporal percentile in frequency band $b$ over observed minutes, and the analytical baseline \texttt{Physics\_q15} uses $s_{15}$ directly without learned parameters.
+
+Around Equation~\eqref{eq:excess_share}, I assemble 138 mask-aware tabular predictors organized across four physical groups:
 \begin{itemize}
-    \item \textbf{Analytical multi-quantile floor baselines:} Excess energy share $s_q = \sum_\Omega \max(\tilde{E} - \hat{B}_q, 0) / \sum_\Omega \tilde{E}$ and logit transforms across $q \in \{5,10,15,20,25,35,50\}$, where $\hat{B}_q(b)$ is the $q$-th temporal percentile per band (\texttt{Physics\_q15} uses $q=15$ directly without training), plus broadband range, tail asymmetry, and excursion fractions.
-    \item \textbf{Sub-band cavitation and machinery emergence:} Separate shares and temporal ranges across Very Low Frequency (\texttt{vlf}: 31.6--100\,Hz), Low Frequency (\texttt{lf}: 125.9--501.2\,Hz), Mid Frequency (\texttt{mf}: 631--1995.3\,Hz), and High Frequency (\texttt{hf}: 2511.9--7943.3\,Hz), plus spectral tilt slope, crest factor, entropy, flatness, and loud-minus-quiet cosine shifts.
-    \item \textbf{Temporal morphology and co-modulation:} 3-minute smoothed range (suppressing single-minute biologic pings), quadratic parabolic concavity ($R^2$ and $-a$ from degree-2 fits over observed time), lag-1 and lag-2 autocorrelation, and cross-band co-modulation fractions quantifying how many of the 25 bands track broadband energy ($r > 0.45$ and $r > 0.65$).
-    \item \textbf{Mask telemetry indicators:} Observed minute fraction and \texttt{m01}/\texttt{m15} missing flags so models adjust prediction uncertainty when edge minutes are absent.
+    \item \textbf{Quantile floors and excursions:} Multi-quantile excess shares $s_q$, logit transforms, broadband range, upper-tail asymmetry, and above-floor excursion fractions.
+    \item \textbf{Sub-band cavitation emergence:} Emergence shares and ranges in Very Low Frequency (31.6--100\,Hz), Low Frequency (125.9--501.2\,Hz), Mid Frequency (631--1995.3\,Hz), and High Frequency (2511.9--7943.3\,Hz) bands alongside spectral tilt, entropy, flatness, crest factor, and loud-minus-quiet cosine shifts.
+    \item \textbf{Temporal morphology and co-modulation:} Three-minute smoothed range suppressing transient clicks, parabolic concavity ($R^2$ and curvature), lag-1 and lag-2 autocorrelation, and cross-band co-modulation fractions tracking broadband correlation ($r > 0.45$ and $r > 0.65$).
+    \item \textbf{Telemetry missingness flags:} Observed minute fraction and boundary indicators for missing \texttt{m01} or \texttt{m15} frames.
 \end{itemize}
-In parallel, a PyTorch dual-head residual network (\texttt{AcousticCNN2D}, adapted from residual blocks of \citealp{he2016resnet}) operates directly on shift-invariant masked tensors $(N, 4, 15, 25)$ whose channels encode $\tilde{X}/15$, band-floor anomaly $(\tilde{X} - \hat{B}_{15})/15$, per-minute spectral shape, and binary observation mask $M \in \{0,1\}$, using masked global mean/max pooling over $M$ and optimizing joint loss $\mathcal{L} = \mathrm{MSE}(\hat{y}, y) + 0.12\,\mathrm{BCE}(\hat{z}, \mathbb{I}[y>0])$.
 
-I benchmark 11 deterministic models on identical 5-fold splits: \texttt{Constant\_Mean}, \texttt{Physics\_q15}, legacy \texttt{V1\_RF\_MaxShift} (96 Notebook~01 features with linear edge interpolation and per-window max subtraction), \texttt{RF\_v2} \parencite{breiman2001rf}, \texttt{Linear} (\texttt{Ridge(solver='cholesky')} + \texttt{LogisticRegression}), \texttt{HistGBM}, \texttt{LightGBM} \parencite{ke2017lightgbm}, \texttt{XGBoost} \parencite{chen2016xgboost}, \texttt{CatBoost} \parencite{prokhorenkova2018catboost}, \texttt{CNN2D}, and \texttt{Ensemble\_v2}. GBDTs and \texttt{CNN2D} use internal disjoint $(k+1)\bmod 5$ early stopping inside \texttt{train}, ensuring 100\% uncontaminated out-of-fold (OOF) predictions for fitting convex SLSQP simplex weights ($\sum_j w_j = 1, w_j \ge 0$) separately for share RMSE and log-loss logit score blending. Bit-exact determinism is locked across runs via \texttt{PYTHONHASHSEED=42}, single-thread BLAS/OMP settings, \texttt{deterministic=True} in LightGBM, and \texttt{torch.use\_deterministic\_algorithms(True)} on 4-thread CPU.
+Alongside tabular trees, a PyTorch dual-head residual network (\texttt{CNN2D}, adapted from residual blocks in \citealp{he2016resnet}) processes masked shift-invariant tensors $(N, 4, 15, 25)$ encoding scaled log levels, band-floor anomalies, per-minute spectral shape, and binary mask indicators. Using masked global mean and max pooling, the network optimizes the joint regression-and-detection objective in Equation~\eqref{eq:cnn_loss}:
+\begin{equation}
+\label{eq:cnn_loss}
+\mathcal{L} = \mathrm{MSE}(\hat{y}, y_{\mathrm{obs}}) + 0.12\,\mathrm{BCE}\big(\hat{z},\, \mathbb{I}[y_{\mathrm{obs}} > 0]\big),
+\end{equation}
+where $\hat{y}$ estimates added vessel energy share, $\hat{z}$ is the predicted presence logit, and $\mathbb{I}[y_{\mathrm{obs}} > 0]$ indicates active vessel presence.
+
+I benchmark 11 deterministic estimators on identical 5-fold splits: \texttt{Constant\_Mean}, \texttt{Physics\_q15}, the legacy max-shifted \texttt{V1\_RF\_MaxShift}, linear models (\texttt{Linear}: ridge regression and logistic regression), shift-invariant random forest (\texttt{RF\_v2}; \citealp{breiman2001rf}), histogram gradient boosting (\texttt{HistGBM}), \texttt{LightGBM} \parencite{ke2017lightgbm}, \texttt{XGBoost} \parencite{chen2016xgboost}, \texttt{CatBoost} \parencite{prokhorenkova2018catboost}, \texttt{CNN2D}, and \texttt{Ensemble\_v2}. Tree boosters and \texttt{CNN2D} use internal disjoint fold early stopping so out-of-fold predictions fit convex SLSQP simplex weights ($\sum_j w_j = 1$, $w_j \ge 0$) without validation leakage. Deterministic CPU execution locks identical outputs across independent runs.
 
 \section{Empirical Results}
 
-\subsection{Real Six-Station South African Acoustic Variability}
-Across the 460 training-only runs (Table~\ref{tab:sa_summary} and Figure~\ref{fig:sa_acoustics}), median run-window levels span nearly 30 uncalibrated dB between Saldanha Bay (61.520) and Bird Island (90.604), while conditional 95\% run-bootstrap intervals quantify sampling precision everywhere except single-run Durban ($n=1$). Within-window temporal variability also differs threefold (St Croix Island: 1.123\,dB vs St Francis: 3.623\,dB), confirming that single static thresholds cannot transfer uniformly across monitoring stations.
+\subsection{Six-Station South African Acoustic Variability}
 
-\begin{table}[tbp]
+Across the 460 baseline monitoring runs (Table~\ref{tab:sa_summary} and Figure~\ref{fig:sa_acoustics}), median station levels span nearly 30 uncalibrated dB between Saldanha Bay (61.520) and Bird Island (90.604). Within-window temporal variability also differs by more than a factor of three (1.123\,dB at St Croix Island vs 3.623\,dB at St Francis), showing why fixed energy thresholds fail when transferred across coastal sites.
+
+\begin{table}[!htbp]
 \centering
-\caption{Training-only six-station South African descriptive summary (source-export uncalibrated dB; 1,000-draw conditional run bootstrap, seed 42) and VTUAD median shape RMS distance.}
+\caption{Training-only descriptive summary across six South African stations (source-export uncalibrated dB; 1,000-draw conditional run bootstrap, seed 42) and median spectral RMS distance to VTUAD.}
 \label{tab:sa_summary}
-\footnotesize\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lrrrlrr@{}}
 \toprule
-Monitoring Site & Runs & Recorders & Median Level & Conditional 95\% CI & Within-Win. Var. & VTUAD RMS Dist. (dB) \\
+Monitoring Site & Runs & Recorders & Median Level & Conditional 95\% CI & Within-Window SD (dB) & VTUAD RMS Dist. (dB) \\
 \midrule
     Richards Bay & 120 & 3 & 63.958 & 62.013--66.346 & 2.518 & 17.028 \\
     Durban & 1 & 1 & 68.991 & Not estimable ($n=1$) & 2.103 & 26.202 \\
@@ -164,44 +257,50 @@ Monitoring Site & Runs & Recorders & Median Level & Conditional 95\% CI & Within
     St Francis & 120 & 1 & 85.875 & 85.101--86.922 & 3.623 & 7.477 \\
     Saldanha Bay & 120 & 2 & 61.520 & 60.747--62.399 & 1.183 & 11.714 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig1_sa_real_acoustics.png}
-\caption{Six-station training-only South African real-acoustic summary: (a) sampled indexed recording runs ($n=460$ total, capped at 120/site); (b) median run-window level with 95\% conditional run-bootstrap intervals (omitting Durban $n=1$); and (c) median within-window temporal-band variability.}
+\includegraphics[width=0.84\textwidth]{figures/fig1_sa_real_acoustics.png}
+\caption{Real South African six-station baseline ($n=460$ runs, capped at 120/site): (a) run counts per site; (b) median run-window level with 95\% conditional run-bootstrap intervals (Durban $n=1$ unestimable); and (c) median within-window temporal standard deviation.}
 \label{fig:sa_acoustics}
 \end{figure}
 
 \subsection{Geographic Site Context and Spatial Boundaries}
-Figure~\ref{fig:site_context} plots the six training summaries at \texttt{stations.csv} working candidate coordinates without spatial interpolation and explicitly flags Saldanha Bay's unresolved secondary coordinate. Because deployments are asynchronous, uncalibrated, and unlabelled for natural vessel passages, Figure~\ref{fig:site_context} documents monitoring site context only and must not be interpreted as a validated shipping-noise pressure map.
 
-\begin{figure}[tbp]
+Figure~\ref{fig:site_context} maps the six training summaries strictly at working site-level candidate coordinates without spatial interpolation, marking Saldanha Bay's unresolved secondary coordinate explicitly. Because deployments are asynchronous across instruments, uncalibrated to physical pressure, and lack vessel-passage ground truth, this map records monitoring context only and must not be read as a shipping-pressure map.
+
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.92\textwidth]{figures/fig2_site_context_map.png}
-\caption{Non-interpolated total-sound site context anchored at \texttt{stations.csv} candidate coordinates (marker area proportional to sampled runs; colour encodes median uncalibrated run-window level; red cross indicates Saldanha Bay's alternative candidate position).}
+\includegraphics[width=0.70\textwidth]{figures/fig2_site_context_map.png}
+\caption{Non-interpolated total-sound site context plotted at candidate coordinates (marker area proportional to sampled runs; colour indicates median uncalibrated level; red cross flags Saldanha Bay's unresolved alternative position).}
 \label{fig:site_context}
 \end{figure}
 
 \subsection{Cross-Corpus Spectral Structure and Mismatch}
-Figure~\ref{fig:spectral_mismatch}a compares peak-normalized South African site spectra (which roll off steadily at 20--34\,dB from 31.6\,Hz to 7.94\,kHz) against external VTUAD and HearMyShip median vessel profiles (which maintain relatively stronger 100\,Hz--2\,kHz propulsion and small-boat cavitation plateaus). Median station-to-VTUAD shape distances range from 7.477\,dB at St Francis to 26.202\,dB at Durban (Figure~\ref{fig:spectral_mismatch}b), directly explaining why unwarped synthetic classifiers overfit to external sensor coloration and validating this propagation-warp strategy.
 
-\begin{figure}[tbp]
+Comparing peak-normalized spectra in Figure~\ref{fig:spectral_mismatch}a clarifies why naive classifiers struggle across regions: South African stations decline steadily by 20--34\,dB from 31.6\,Hz to 7.94\,kHz, whereas VTUAD and HearMyShip vessel clips maintain stronger propulsion and cavitation plateaus between 100\,Hz and 2\,kHz. As shown in Figure~\ref{fig:spectral_mismatch}b, median shape RMS distances between South African stations and VTUAD span 7.477\,dB (St Francis) to 26.202\,dB (Durban), directly motivating spectral propagation warping during synthetic training.
+
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig3_spectral_structure_mismatch.png}
-\caption{Cross-corpus spectral comparison: (a) peak-normalized South African station medians overlaid with 2s deci-decade VTUAD (525 clips) and HearMyShip (96 clips) profiles; (b) median VTUAD spectral-shape RMS distances alongside each site's P90--P10 run-level deviation spread.}
+\includegraphics[width=0.84\textwidth]{figures/fig3_spectral_structure_mismatch.png}
+\caption{Cross-corpus spectral mismatch: (a) peak-normalized South African station medians overlaid with two-second deci-decade VTUAD (525 clips) and HearMyShip (96 clips) profiles; and (b) median VTUAD spectral-shape RMS distances compared against each site's P90--P10 run-level deviation spread.}
 \label{fig:spectral_mismatch}
 \end{figure}
 
-\subsection{Missingness Profile, Representation Audits, and Experiment 007 Trade-offs}
-Read-only structural inspection of \texttt{Test.csv} (Figure~\ref{fig:exp007}a) shows 725/1,500 rows (48.3\%) contain missing cells strictly as whole-minute dropouts, concentrated at boundary minutes \texttt{m01} (41.6\%, 624 rows) and \texttt{m15} (6.7\%, 100 rows). Earlier V1 pipelines interpolated missing edges linearly and shifted by $\max(X)$; in Experiment~004 ($n=300$ frozen pairs), retaining original relative levels outperformed max-shifting across all five tested sites (RMSE 0.11443 vs 0.15089). Furthermore, Experiment~007 (Table~\ref{tab:exp007} and Figure~\ref{fig:exp007}b; 120 paired scenarios, 840 source-disjoint cases) demonstrated that contrast-varied training lowered share RMSE from 0.114236 to 0.094566 ($\sim 17.2\%$ relative point gain, though the 95\% run-bootstrap CI $[-0.00041, 0.04230]$ crossed zero) and lifted AUC from 0.848328 to 0.886421, yet nearly doubled non-injected false positives at a fixed 0.50 cutoff (0.16667 to 0.30000; threshold tuning to 0.55 lowered FPR to 0.23333).
+\subsection{Missingness Profile, Amplitude Audits, and Contrast Trade-offs}
 
-\begin{table}[tbp]
+Structural auditing of \texttt{Test.csv} shows that 725 of 1,500 evaluation windows (48.3\%) contain missing entries strictly as complete omitted minutes at boundary timestamps \texttt{m01} (41.6\%, 624 rows) and \texttt{m15} (6.7\%, 100 rows; Figure~\ref{fig:exp007}a). On 300 frozen diagnostic pairs across five sites, preserving true relative window levels reduced RMSE from 0.15089 (maximum-shifted baseline) to 0.11443.
+
+In a separate source-disjoint synthetic experiment evaluating spectral contrast augmentation across 120 paired background-vessel configurations (840 total cases; Table~\ref{tab:exp007} and Figure~\ref{fig:exp007}b), training on contrast-varied mixtures reduced share RMSE from 0.114236 to 0.094566 and raised ROC AUC from 0.848328 to 0.886421, although the run-bootstrap 95\% CI for RMSE reduction ($[-0.00041, 0.04230]$) crossed zero and non-injected control false positives at a fixed 0.50 cutoff nearly doubled from 0.16667 to 0.30000 (calibration to cutoff 0.55 lowered false positives to 0.23333).
+
+\begin{table}[!htbp]
 \centering
-\caption{Frozen Experiment~007 source-disjoint assessment (840 synthetic cases; non-injected control FPR denominator $n=120$; observed positive TPR denominator $n=714$).}
+\caption{Source-disjoint contrast-augmentation experiment across 840 synthetic cases (non-injected control FPR $n=120$; observed positive TPR $n=714$).}
 \label{tab:exp007}
-\small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
 Prespecified Decision Policy & Share RMSE $\downarrow$ & Share MAE $\downarrow$ & ROC AUC $\uparrow$ & Synth TPR $\uparrow$ & Control FPR $\downarrow$ \\
@@ -211,114 +310,122 @@ Prespecified Decision Policy & Share RMSE $\downarrow$ & Share MAE $\downarrow$ 
     Contrast-varied (cal. cutoff 0.55) & 0.094566 & 0.060648 & 0.886421 & 0.85294 & 0.23333 \\
     Hybrid (orig. det. 0.50 + varied reg.) & 0.094566 & 0.060648 & 0.848328 & 0.73950 & 0.16667 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig4_domain_gap_exp007.png}
-\caption{Domain-gap diagnostics: (a) read-only \texttt{Test.csv} missingness concentrated at window endpoints (\texttt{m01}, \texttt{m15}); and (b) Experiment~007 trade-off showing RMSE reduction vs non-injected control false alarms under contrast augmentation.}
+\includegraphics[width=0.84\textwidth]{figures/fig4_domain_gap_exp007.png}
+\caption{Domain-gap diagnostics: (a) read-only evaluation missingness concentrated at window edges (\texttt{m01} and \texttt{m15}); and (b) synthetic experiment trade-off between RMSE improvement and non-injected false-alarm rates under contrast augmentation.}
 \label{fig:exp007}
 \end{figure}
 
 \subsection{Deterministic 11-Model Benchmark and Unseen-Station Generalization}
-Incorporating all architectural upgrades from my Experiments~004--007 audits into the leak-free Modeling~v2 framework yields decisive improvements across all metrics (Table~\ref{tab:benchmark} and Figure~\ref{fig:benchmark}). Notice two crucial diagnostics:
+
+Evaluating all 11 deterministic models across source-disjoint validation ($n=1,500$) and unseen holdout stations (Fish Hoek and Sea Point, $n=541$) establishes two clear empirical results (Table~\ref{tab:benchmark} and Figure~\ref{fig:benchmark}):
 \begin{enumerate}
-    \item \textbf{Failure of naive analytical energy thresholding:} Uncalibrated \texttt{Physics\_q15} fails badly (Val $1 - \mathrm{RMSE} = 0.5282$, worse than \texttt{Constant\_Mean} 0.6953, with $\mathrm{AUC} = 0.5326$) because ambient wind swells, stationary traffic, and multi-minute dropouts distort single-quantile energy floors.
-    \item \textbf{Feature upgrade plus CNN2D--GBDT complementarity:} Replacing Notebook~01's 96 max-shifted features (\texttt{V1\_RF\_MaxShift}: Val 0.8270, Holdout 0.8390) with 138 shift-invariant mask-aware features raises random forest accuracy immediately (\texttt{RF\_v2}: 0.8444 Val / 0.8556 Holdout). Gradient boosted trees push Val score to 0.8632 (\texttt{LightGBM}), while \texttt{CNN2D} excels on spatial-temporal generalization, reaching 0.8722 on Val and 0.8835 ($\mathrm{ROC\ AUC} = 0.9425$) on completely unseen stations (Fish Hoek and Sea Point). Blending via train-OOF simplex weights (share weights: \texttt{CNN2D} 0.516, \texttt{HistGBM} 0.143, \texttt{CatBoost} 0.115, \texttt{LightGBM} 0.114, \texttt{XGBoost} 0.111; score weights: \texttt{CNN2D} 0.621, \texttt{HistGBM} 0.292, \texttt{XGBoost} 0.086, \texttt{Linear} 0.001) yields \texttt{Ensemble\_v2} at 0.8747 Val ($\mathrm{AUC} = 0.9725$) and 0.8833 Unseen Holdout ($\mathrm{AUC} = 0.9365$), reducing RMSE by 27.5\% relative to \texttt{V1\_RF\_MaxShift} on unseen sites.
+    \item \textbf{Failure of uncalibrated analytical floors:} Direct energy thresholding via \texttt{Physics\_q15} performs worse than predicting the training mean (validation $1-\mathrm{RMSE}$ 0.5282 vs 0.6953; ROC AUC 0.5326) because wind swell, stationary ships, and boundary dropouts violate quiet-baseline assumptions.
+    \item \textbf{Shift-invariant representations and CNN--GBDT synergy:} Moving from 96 max-shifted features (\texttt{V1\_RF\_MaxShift}: validation 0.8270, holdout 0.8390) to 138 shift-invariant features improves random-forest generalization immediately (\texttt{RF\_v2}: 0.8444 validation, 0.8556 holdout). Gradient boosters reach 0.8632 validation (\texttt{LightGBM}), while \texttt{CNN2D} leads single models on unseen sites at 0.8835 (AUC 0.9425). Convex simplex blending (share weights: \texttt{CNN2D} 0.516, \texttt{HistGBM} 0.143, \texttt{CatBoost} 0.115, \texttt{LightGBM} 0.114, \texttt{XGBoost} 0.111; score weights: \texttt{CNN2D} 0.621, \texttt{HistGBM} 0.292, \texttt{XGBoost} 0.086, \texttt{Linear} 0.001) yields \texttt{Ensemble\_v2} at 0.8747 validation (AUC 0.9725) and 0.8833 holdout (AUC 0.9365), cutting unseen-site RMSE by 27.5\% relative to \texttt{V1\_RF\_MaxShift}.
 \end{enumerate}
 
-\begin{table}[tbp]
+\begin{table}[!htbp]
 \centering
-\caption{Deterministic 11-model comparison evaluated on source-disjoint Validation (6 known sites, $n=1,500$) and Unseen-Station Holdout (Fish Hoek \& Sea Point, $n=541$). Zero \texttt{Test.csv} information used.}
+\caption{Deterministic 11-model benchmark evaluated on known-station validation ($n=1,500$) and unseen holdout stations (Fish Hoek and Sea Point, $n=541$) without using evaluation windows.}
 \label{tab:benchmark}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llrrrrrr@{}}
 \toprule
 Model & Representation & Val $1-\mathrm{RMSE}\uparrow$ & Val RMSE $\downarrow$ & Val AUC $\uparrow$ & Holdout $1-\mathrm{RMSE}\uparrow$ & Holdout RMSE $\downarrow$ & Holdout AUC $\uparrow$ \\
 \midrule
-    Constant\_Mean & Train fold mean & 0.6953 & 0.3047 & 0.5000 & 0.7007 & 0.2993 & 0.5000 \\
+    Constant\_Mean & Training-fold mean & 0.6953 & 0.3047 & 0.5000 & 0.7007 & 0.2993 & 0.5000 \\
     Physics\_q15 & $q=15$ quantile floor & 0.5282 & 0.4718 & 0.5326 & 0.6174 & 0.3826 & 0.5766 \\
-    V1\_RF\_MaxShift & 96 V1 (max-shift) & 0.8270 & 0.1730 & 0.9578 & 0.8390 & 0.1610 & 0.8980 \\
-    Linear & 138 V2 (shift-inv.) & 0.8245 & 0.1755 & 0.9406 & 0.8321 & 0.1679 & 0.9194 \\
-    RF\_v2 & 138 V2 (shift-inv.) & 0.8444 & 0.1556 & 0.9545 & 0.8556 & 0.1444 & 0.9095 \\
-    CatBoost & 138 V2 (shift-inv.) & 0.8600 & 0.1400 & 0.9606 & 0.8670 & 0.1330 & 0.9108 \\
-    HistGBM & 138 V2 (shift-inv.) & 0.8600 & 0.1400 & 0.9605 & 0.8708 & 0.1292 & 0.9031 \\
-    XGBoost & 138 V2 (shift-inv.) & 0.8619 & 0.1381 & 0.9583 & 0.8712 & 0.1288 & 0.9060 \\
-    LightGBM & 138 V2 (shift-inv.) & 0.8632 & 0.1368 & 0.9590 & 0.8721 & 0.1279 & 0.9091 \\
+    V1\_RF\_MaxShift & 96 max-shifted features & 0.8270 & 0.1730 & 0.9578 & 0.8390 & 0.1610 & 0.8980 \\
+    Linear & 138 shift-invariant features & 0.8245 & 0.1755 & 0.9406 & 0.8321 & 0.1679 & 0.9194 \\
+    RF\_v2 & 138 shift-invariant features & 0.8444 & 0.1556 & 0.9545 & 0.8556 & 0.1444 & 0.9095 \\
+    CatBoost & 138 shift-invariant features & 0.8600 & 0.1400 & 0.9606 & 0.8670 & 0.1330 & 0.9108 \\
+    HistGBM & 138 shift-invariant features & 0.8600 & 0.1400 & 0.9605 & 0.8708 & 0.1292 & 0.9031 \\
+    XGBoost & 138 shift-invariant features & 0.8619 & 0.1381 & 0.9583 & 0.8712 & 0.1288 & 0.9060 \\
+    LightGBM & 138 shift-invariant features & 0.8632 & 0.1368 & 0.9590 & 0.8721 & 0.1279 & 0.9091 \\
     CNN2D & $(4,15,25)$ masked grid & 0.8722 & 0.1278 & 0.9711 & 0.8835 & 0.1165 & 0.9425 \\
-    \textbf{Ensemble\_v2} & V2 tabular + grid & 0.8747 & 0.1253 & 0.9725 & 0.8833 & 0.1167 & 0.9365 \\
+    \textbf{Ensemble\_v2} & Tabular + masked grid blend & 0.8747 & 0.1253 & 0.9725 & 0.8833 & 0.1167 & 0.9365 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig5_benchmark_11_models.png}
-\caption{Deterministic 11-model performance on known-station validation ($n=1,500$) and completely unseen holdout sites ($n=541$): (a) competition metric $1-\mathrm{RMSE}$ (dashed line marks legacy \texttt{V1\_RF\_MaxShift} holdout score 0.8390); and (b) vessel detection ROC AUC.}
+\includegraphics[width=0.84\textwidth]{figures/fig5_benchmark_11_models.png}
+\caption{Deterministic 11-model performance on validation ($n=1,500$) and unseen holdout sites ($n=541$): (a) competition metric $1-\mathrm{RMSE}$ relative to legacy \texttt{V1\_RF\_MaxShift} holdout (0.8390 dashed line); and (b) vessel presence ROC AUC.}
 \label{fig:benchmark}
 \end{figure}
 
 \subsection{Interpretability, Station Consistency, and Trajectory Diagnostics}
-Feature importance averaged across LightGBM, XGBoost, and CatBoost (Figure~\ref{fig:interpretability}a) confirms physical interpretability: the top predictors are high- and mid-frequency excess energy contributions together with temporal co-modulation and autocorrelation descriptors, specifically \texttt{hf\_contrib\_q10} (0.153), \texttt{hf\_contrib\_q25} (0.080), \texttt{mf\_contrib\_q10} (0.061), \texttt{morph\_mean\_comod} (0.059), \texttt{morph\_lag1\_corr} (0.029). Thus, trees rely simultaneously on HF/MF propulsion-cavitation emergence and coherent multi-band temporal evolution rather than recorder noise floors.
 
-Across all eight stations individually (Table~\ref{tab:stations} and Figure~\ref{fig:interpretability}b), \texttt{Ensemble\_v2} cuts RMSE consistently compared to both \texttt{Physics\_q15} and \texttt{V1\_RF\_MaxShift}, achieving RMSE 0.1003 ($1-\mathrm{RMSE} = 0.8997$, $\mathrm{AUC} = 0.9604$) on unseen Sea Point and 0.1286 ($1-\mathrm{RMSE} = 0.8714$, $\mathrm{AUC} = 0.9165$) on unseen Fish Hoek. Unseen-holdout error diagnostics (Figure~\ref{fig:holdout_diag}) demonstrate tight calibration along the diagonal ($R^2 = 0.848$), strong detection lift over legacy RF across false-positive thresholds, and lower error across every trajectory regime (\texttt{entry\_exit} RMSE 0.0898, \texttt{cpa\_bell} 0.1137, \texttt{stationary\_drift} 0.1516 vs legacy RF 0.1706, 0.1656, 0.1843) as well as masked ($<15$\,min) windows (RMSE 0.1237 vs 0.1770). Strictly inference-only \texttt{Test.csv} predictions (\texttt{submissions/candidate\_v2\_ensemble.csv}, $n=1,500$) span $[0.0005, 0.9394]$ ($\mathrm{mean} = 0.2932$, $\mathrm{SD} = 0.2174$).
+Mean normalized gain across LightGBM, XGBoost, and CatBoost (Figure~\ref{fig:interpretability}a) confirms that tree predictions track genuine physical acoustics rather than recorder gain artifacts. The five highest-ranked predictors combine high- and mid-frequency emergence with temporal coherence: \texttt{hf\_contrib\_q10} (0.153), \texttt{hf\_contrib\_q25} (0.080), \texttt{mf\_contrib\_q10} (0.061), \texttt{morph\_mean\_comod} (0.059), \texttt{morph\_lag1\_corr} (0.029).
 
-\begin{table}[tbp]
+Across all eight stations individually (Table~\ref{tab:stations} and Figure~\ref{fig:interpretability}b), \texttt{Ensemble\_v2} lowers RMSE at every location, reaching 0.1003 ($1-\mathrm{RMSE} = 0.8997$, AUC 0.9604) on unseen Sea Point and 0.1286 ($1-\mathrm{RMSE} = 0.8714$, AUC 0.9165) on unseen Fish Hoek. Unseen-holdout error checks (Figure~\ref{fig:holdout_diag}) show strong alignment along the identity line ($R^2 = 0.848$) and consistent RMSE gains across every vessel trajectory (\texttt{entry\_exit} 0.0898 vs 0.1706, \texttt{cpa\_bell} 0.1137 vs 0.1656, \texttt{stationary\_drift} 0.1516 vs 0.1843) and incomplete ($<15$-minute) windows (0.1237 vs 0.1770). Frozen predictions across the 1,500 evaluation windows span $[0.0005, 0.9394]$ ($\mathrm{mean} = 0.2932$, $\mathrm{SD} = 0.2174$).
+
+\begin{table}[!htbp]
 \centering
-\caption{Per-station performance breakdown across Validation and Unseen-Station Holdout comparing \texttt{V1\_RF\_MaxShift} vs deterministic \texttt{Ensemble\_v2}.}
+\caption{Per-station accuracy across Validation and Unseen-Station Holdout comparing the initial random forest baseline (\texttt{V1\_RF\_MaxShift}) against \texttt{Ensemble\_v2}.}
 \label{tab:stations}
-\footnotesize\setlength{\tabcolsep}{4.5pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llrrrrr@{}}
 \toprule
-Split & Monitoring Station & V1 $1-\mathrm{RMSE}$ & Ensemble $1-\mathrm{RMSE}\uparrow$ & Ensemble RMSE $\downarrow$ & V1 AUC & Ensemble AUC $\uparrow$ \\
+Split & Monitoring Station & Initial RF $1-\mathrm{RMSE}$ & Ensemble $1-\mathrm{RMSE}\uparrow$ & Ensemble RMSE $\downarrow$ & Initial RF AUC & Ensemble AUC $\uparrow$ \\
 \midrule
     Holdout & Fish Hoek & 0.8391 & 0.8714 & 0.1286 & 0.8741 & 0.9165 \\
     Holdout & Sea Point & 0.8389 & 0.8997 & 0.1003 & 0.9511 & 0.9604 \\
-    Val & Richards Bay & 0.8179 & 0.8661 & 0.1339 & 0.9178 & 0.9543 \\
-    Val & Durban & 0.8423 & 0.8843 & 0.1157 & 0.9618 & 0.9797 \\
-    Val & Bird Island & 0.8180 & 0.8730 & 0.1270 & 0.9680 & 0.9693 \\
-    Val & St Croix Island & 0.8132 & 0.8717 & 0.1283 & 0.9466 & 0.9559 \\
-    Val & St Francis & 0.8380 & 0.8705 & 0.1295 & 0.9886 & 0.9962 \\
-    Val & Saldanha Bay & 0.8350 & 0.8834 & 0.1166 & 0.9642 & 0.9775 \\
+    Validation & Richards Bay & 0.8179 & 0.8661 & 0.1339 & 0.9178 & 0.9543 \\
+    Validation & Durban & 0.8423 & 0.8843 & 0.1157 & 0.9618 & 0.9797 \\
+    Validation & Bird Island & 0.8180 & 0.8730 & 0.1270 & 0.9680 & 0.9693 \\
+    Validation & St Croix Island & 0.8132 & 0.8717 & 0.1283 & 0.9466 & 0.9559 \\
+    Validation & St Francis & 0.8380 & 0.8705 & 0.1295 & 0.9886 & 0.9962 \\
+    Validation & Saldanha Bay & 0.8350 & 0.8834 & 0.1166 & 0.9642 & 0.9775 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig6_interpretability_and_stations.png}
-\caption{(a) Top-15 acoustic features ranked by mean normalized gain across LightGBM, XGBoost, and CatBoost; and (b) station-level RMSE across six validation stations and two completely unseen holdout sites.}
+\includegraphics[width=0.84\textwidth]{figures/fig6_interpretability_and_stations.png}
+\caption{(a) Top-15 acoustic predictors ranked by mean normalized gain across LightGBM, XGBoost, and CatBoost; and (b) error reduction across all six validation sites and both unseen holdout stations.}
 \label{fig:interpretability}
 \end{figure}
 
-\begin{figure}[tbp]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig7_holdout_diagnostics_and_test.png}
-\caption{Unseen-station holdout diagnostics ($n=541$): (a) predicted vs true \texttt{share\_added\_vessel} (\texttt{Ensemble\_v2}); (b) ROC comparison against baselines; and (c) holdout RMSE breakdown by simulated trajectory mode comparing legacy \texttt{V1\_RF\_MaxShift} and \texttt{Ensemble\_v2}.}
+\includegraphics[width=0.84\textwidth]{figures/fig7_holdout_diagnostics_and_test.png}
+\caption{Unseen-station holdout diagnostics ($n=541$): (a) predicted versus true \texttt{share\_added\_vessel} for \texttt{Ensemble\_v2}; (b) ROC curves against baselines; and (c) holdout RMSE across simulated trajectory regimes.}
 \label{fig:holdout_diag}
 \end{figure}
 
 \section{Validity Boundaries and Coastal Monitoring Recommendations}
-While \texttt{Ensemble\_v2} demonstrates strong shift-invariant generalization across unseen coastal sites, three evidentiary boundaries remain open in the released challenge data:
+
+Three evidentiary boundaries remain open in the released monitoring archive and constrain ecological interpretation:
 \begin{enumerate}
-    \item \textbf{Uncalibrated pressure and unverified positions:} Without per-hydrophone end-to-end sensitivity curves (to convert source exports to calibrated $\mathrm{dB\,re\,1\,\mu Pa}$) and exact verified deployment coordinates, spatial plots remain descriptive telemetry summaries rather than absolute underwater sound-pressure maps.
-    \item \textbf{Absence of natural field annotations:} Synthetic mixtures establish physical energy-share separation against real South African backgrounds, but true vessel-count or vessel-class attribution in unlabeled field hours requires clock-synchronized AIS/optical validation.
-    \item \textbf{Hidden test distribution:} \texttt{Test.csv} ground truth is withheld; leaderboard confirmation of Candidate~v2 (0.8747 Val / 0.8833 Holdout) over my provisional probe (0.761536) awaits Zindi scoring after public external-data disclosure.
+    \item \textbf{Uncalibrated exports and approximate positions:} Without per-hydrophone sensitivity tables to convert digital levels into $\mathrm{dB\,re\,1\,\mu Pa}$ alongside verified deployment coordinates, spatial plots represent descriptive site telemetry rather than physical sound-pressure fields.
+    \item \textbf{Absence of field passage labels:} Synthetic mixtures verify energy-share separation over authentic South African backgrounds, whereas estimating true vessel counts or traffic intensity in ambient hours requires clock-synchronized AIS or optical ground truth.
+    \item \textbf{Withheld evaluation targets:} Test labels remain hidden until public leaderboard scoring confirms whether holdout improvements (0.8833 vs 0.761536 initial submission) transfer identically under unseen field conditions.
 \end{enumerate}
-For practical ecological monitoring across SAEON and SANBI networks, releasing per-recorder calibration tables, deployment intervals, and synchronized optical/AIS ground truth at candidate port stations would immediately convert these relative shift-invariant indicators into operational coastal noise budgets.
+
+Releasing recorder calibration tables, exact deployment dates, and synchronized AIS or visual logs for port stations would immediately convert these shift-invariant estimates into calibrated coastal noise budgets for South African marine networks.
 
 \section{Reproducibility, Code Verification, and Data Compliance}
-Both research and predictive artifacts obey strict provenance and anti-leakage rules:
+
+All analyses, external datasets, and submission archives follow strict provenance and anti-leakage controls:
 \begin{itemize}
-    \item \textbf{Clean-copy V6 research verification:} Running \texttt{scripts/build\_submission\_deliverables.py -{}-verify-only} in an isolated temporary directory compiled all 17 archived science scripts in \texttt{research\_code\_v6.zip} (79620 bytes, SHA-256 \texttt{6aad3e47fe4e5ec1...}) and regenerated Figure~2, all three Table~\ref{tab:exp007} CSVs, and all three Table~\ref{tab:sa_summary} CSVs byte-for-byte without bundling restricted audio.
-    \item \textbf{Deterministic Modeling~v2 verification:} Dual cross-subprocess execution checks confirmed bit-exact repeatability ($\max|\Delta \hat{y}| = 0.0$, digest \texttt{c58e79c022eb438d}) across all seven learned model families under pinned dependencies (\texttt{requirements.txt}, 126 packages, zero AutoML). Both \texttt{01\_south\_african\_acoustic\_eda.ipynb} (72 cells, 15 PNGs, Finding-to-Choice log) and \texttt{02\_vessel\_noise\_modeling.ipynb} (22 cells, 9 PNGs, live 11-model runs) execute end-to-end with zero errors.
-    \item \textbf{Competition compliance:} \texttt{Test.csv} remained strictly inference-only throughout; external-data disclosures for VTUAD v1.3.0 and HearMyShip (\texttt{docs/EXTERNAL\_DATA\_DISCLOSURE.md}) and my spatial-map scope clarification (\texttt{docs/ORGANIZER\_MAP\_CLARIFICATION.md}) accompany the submission.
+    \item \textbf{Research verification archive (V6):} Running \path{scripts/build_submission_deliverables.py} \texttt{-{}-verify-only} in an isolated temporary folder compiles all 17 archived analysis scripts inside \path{research_code_v6.zip} (79620 bytes, SHA-256 \texttt{6aad3e47fe4e5ec1...}) and regenerates Figure~2 plus all six descriptive and contrast-experiment CSV tables byte-for-byte without bundling raw audio.
+    \item \textbf{Deterministic modeling verification (Modeling~v2):} Dual-subprocess checks confirmed bit-exact repeatability ($\max|\Delta\hat{y}| = 0.0$, digest \texttt{c58e79c022eb438d}) across all seven learned families under 126 pinned dependencies (\path{requirements.txt}, zero AutoML). Both \path{notebooks/01_south_african_acoustic_eda.ipynb} and \path{notebooks/02_vessel_noise_modeling.ipynb} execute end-to-end with zero errors, exporting predictions to \path{submissions/candidate_v2_ensemble.csv}.
+    \item \textbf{Competition compliance:} \texttt{Test.csv} remained strictly inference-only throughout; public external-data disclosures for VTUAD v1.3.0 and HearMyShip (\path{docs/EXTERNAL_DATA_DISCLOSURE.md}) and my site-map clarification (\path{docs/ORGANIZER_MAP_CLARIFICATION.md}) accompany the archive.
 \end{itemize}
 
 \section{Conclusion}
-I paired an empirically grounded, leak-free characterization of 460 South African acoustic runs with a deterministic 11-model benchmark addressing band-edge alignment, global-offset invariance, whole-minute missingness, and coastal small-craft diversity. Replacing max-shifted V1 heuristics with 2s base-10 deci-decade features, propagation-warped trajectories, and a CNN2D--GBDT ensemble elevated validation $1-\mathrm{RMSE}$ to 0.8747 and unseen-station holdout performance to 0.8833 ($\mathrm{AUC} = 0.9365$). At the same time, transparent separation of total recorded sound from calibrated shipping pressure ensures scientific rigor while guiding future field calibration in South African marine soundscapes.
+
+By uniting a descriptive baseline across 460 South African monitoring runs with aligned two-second deci-decade extraction, propagation-warped trajectories, and global-offset-invariant modeling, this study diagnoses and overcomes severe cross-site domain shift. Shifting from maximum-normalized heuristics to a deterministic CNN--GBDT simplex ensemble lowers RMSE by 27.5\% on completely unseen South African stations while preserving explicit evidentiary boundaries around uncalibrated coastal telemetry.
 
 \printbibliography[heading=bibintoc,title={References}]
 
