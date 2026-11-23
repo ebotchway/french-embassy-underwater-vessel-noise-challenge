@@ -3,7 +3,7 @@
   "code_archive": {
     "path": "deliverables/research_submission/research_code_v6.zip",
     "bytes": 79563,
-    "sha256": "3916469a19c84a1a96a803f6f44e9ec1be869634a901e4a56b289ea352214f62",
+    "sha256": "02431f367aa464a2cebf24e70bac5aeb22775b000f2e4224834e7838d9568eb1",
     "entries": 20
   },
   "clean_copy_verification": {
@@ -22,9 +22,9 @@
   },
   "research_pdf": {
     "path": "deliverables/research_submission/research_manuscript.pdf",
-    "bytes": 671920,
+    "bytes": 671917,
     "pages": 5,
-    "sha256": "176e41c4bd65ac28e4ad10179711f0818a698ef97fa9baea002df3df56b44719",
+    "sha256": "7d64b4d7c796b8a26802a9653870678e7fd5ae9c2565d7d057a5a28247b9c039",
     "figure4_fix_verified": true
   }
 }

@@ -12,6 +12,12 @@ I am using **VTUAD (rebuilt)** — an AIS-auto-labelled vessel-type underwater a
 - **Processing:** Audio was converted to complete-minute 25-band relative digital power summaries, absolute digital gain was discarded, and normalized vessel spectra were combined in linear energy with permitted South African training backgrounds to create controlled synthetic additions (`share_added_vessel`). These clips are AIS-associated candidate vessel passages, not pure vessel-only audio or calibrated SPL.
 - **Redistribution:** Submitted code archives do **not** redistribute VTUAD WAVs or South African competition files; reviewers must obtain sources from Zenodo/ONC and Zindi under their respective terms.
 
+### HearMyShip Acoustic Dataset (Small Craft & Coastal Vessels)
+
+- **Source:** University of Zagreb FER **HearMyShip** (`https://hearmyship.fer.hr/`), accessed via `https://hearmyship.fer.hr/api/vessels` (`1,149` catalog records).
+- **Local sample:** `96` valid 48 kHz WAV clips across `8` vessel categories (`Yacht`: 23, `Ferry`: 23, `Motorboat`: 23, `Tour boat`: 21, `Cargo Ship`: 2, `Fishing Vessel`: 2, `Auxiliary ship`: 1, `Tour Boat - Diving boat`: 1), group-split by vessel passage (`75` train / `21` validation) in [hearmyship_split_v1.csv](file:///Users/qwaku/Codes/QBE/Zindi/french-embassy-underwater-vessel-noise-challenge/data/external/hearmyship/metadata/hearmyship_split_v1.csv).
+- **Processing:** Extracted using the competition's 2s non-overlapping Hann periodogram over base-10 deci-decade bands; raw audio is not redistributed.
+
 ---
 
 - **Zindi Discussion URL:** NOT YET RECORDED

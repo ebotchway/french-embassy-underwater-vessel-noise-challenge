@@ -2,6 +2,7 @@
 """Build and clean-copy verify research_code_v6.zip and research_manuscript.pdf."""
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -379,7 +380,50 @@ def render_manuscript_pdf(md_text: str) -> dict:
     }
 
 
+def verify_existing_deliverables() -> dict[str, object]:
+    """Verify existing research_code_v6.zip, PDF, and metadata without rewriting them."""
+    assert VERIF_JSON.is_file(), f"Missing {VERIF_JSON}"
+    assert CODE_ZIP.is_file(), f"Missing {CODE_ZIP}"
+    assert MANUSCRIPT_PDF.is_file(), f"Missing {MANUSCRIPT_PDF}"
+
+    recorded = json.loads(VERIF_JSON.read_text(encoding="utf-8"))
+    code_bytes = CODE_ZIP.stat().st_size
+    code_sha = sha256_file(CODE_ZIP)
+    assert code_bytes < MAX_BYTES, f"Zip exceeds 10 MB: {code_bytes}"
+    assert code_bytes == recorded["code_archive"]["bytes"], "Zip byte count mismatch"
+    assert code_sha == recorded["code_archive"]["sha256"], "Zip SHA-256 mismatch"
+
+    pdf_bytes = MANUSCRIPT_PDF.stat().st_size
+    pdf_sha = sha256_file(MANUSCRIPT_PDF)
+    reader = PdfReader(str(MANUSCRIPT_PDF))
+    pages = len(reader.pages)
+    extracted = " ".join((p.extract_text() or "") for p in reader.pages)
+    assert MANUSCRIPT_PDF.read_bytes().startswith(b"%PDF-")
+    assert pdf_bytes < MAX_BYTES, f"PDF exceeds 10 MB: {pdf_bytes}"
+    assert 4 <= pages <= 10, f"PDF page count {pages} outside Zindi 4-10 page limit"
+    assert "Figure 4" in extracted and "relabelling Figure 6" not in extracted
+    assert pdf_bytes == recorded["research_pdf"]["bytes"], "PDF byte count mismatch"
+    assert pdf_sha == recorded["research_pdf"]["sha256"], "PDF SHA-256 mismatch"
+
+    clean_checks = verify_code_zip_clean_copy()
+    return {
+        "status": recorded["status"],
+        "verify_only": True,
+        "code_archive": {"path": str(CODE_ZIP.relative_to(ROOT)), "bytes": code_bytes, "sha256": code_sha},
+        "clean_copy_verification": clean_checks,
+        "research_pdf": {"path": str(MANUSCRIPT_PDF.relative_to(ROOT)), "bytes": pdf_bytes, "pages": pages, "sha256": pdf_sha},
+    }
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Build or verify Zindi research submission deliverables.")
+    parser.add_argument("--verify-only", action="store_true", help="Verify existing deliverables without rebuilding.")
+    args = parser.parse_args()
+
+    if args.verify_only:
+        print(json.dumps(verify_existing_deliverables(), indent=2))
+        return
+
     code_info = build_code_zip()
     clean_checks = verify_code_zip_clean_copy()
 
