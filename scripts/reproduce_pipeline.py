@@ -32,6 +32,7 @@ SELF_TEST_CMDS = [
     ("v4_features", ["scripts/modeling_v4_features.py", "--self-test-only"]),
     ("v4_train", ["scripts/modeling_v4_train.py", "--self-test-only"]),
     ("standards_suite", ["scripts/standardized_evaluation_suite.py", "--self-test-only"]),
+    ("sa_site_activity", ["scripts/evaluate_sa_relative_vessel_activity.py", "--self-test-only"]),
 ]
 
 TRACKED_ARTIFACTS = [
@@ -44,6 +45,8 @@ TRACKED_ARTIFACTS = [
     "submissions/candidate_v3_ensemble.csv",
     "submissions/candidate_v4_ensemble.csv",
     "reports/standards_benchmark/standardized_metrics_full.csv",
+    "reports/standards_benchmark/sa_site_relative_vessel_activity.csv",
+    "reports/standards_benchmark/sa_heldout_signal_support.csv",
     "reports/standards_benchmark/summary.json",
 ]
 

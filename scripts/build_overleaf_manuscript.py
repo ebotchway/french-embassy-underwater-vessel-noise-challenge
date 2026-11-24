@@ -172,8 +172,8 @@ def generate_figures(fig_dir: Path) -> dict[str, dict]:
     plt.tight_layout(w_pad=1.6)
     _save_fig(fig, fig_dir / "fig1_sa_real_acoustics.png")
 
-    # --- Figure 2: Canonical Non-Interpolated Candidate Site Context Map ---
-    src_map = ROOT / "deliverables/research_submission/figures/site_context_candidate_locations.png"
+    # --- Figure 2: Canonical Non-Interpolated Site-Level Relative Acoustic Activity Map & Signal Support ---
+    src_map = ROOT / "reports/standards_benchmark/figures/fig2_site_relative_acoustic_activity_map.png"
     assert src_map.is_file(), f"Missing canonical site map: {src_map}"
     shutil.copy2(src_map, fig_dir / "fig2_site_context_map.png")
 
@@ -619,6 +619,9 @@ def build_main_tex(out_path: Path) -> None:
     san_v4 = json.loads((ROOT / "reports/modeling_v4/sanity_summary.json").read_text())
     man_v4 = json.loads((ROOT / "data/synthetic/modeling_v4/manifest.json").read_text())
     v6_verif = json.loads((ROOT / "deliverables/research_submission/SUBMISSION_VERIFICATION.json").read_text())
+    sa_site = pd.read_csv(ROOT / "reports/standards_benchmark/sa_site_relative_vessel_activity.csv").set_index("station")
+    sa_sup = pd.read_csv(ROOT / "reports/standards_benchmark/sa_heldout_signal_support.csv").set_index(["scope", "stratum"])
+    sa_sum = json.loads((ROOT / "reports/standards_benchmark/sa_site_activity_summary.json").read_text())
 
     # Table 1: Real Six-Station Descriptive Summary
     lvl = boot_ci[boot_ci["metric"] == "window_mean_level"].merge(st_sum, on="station")
@@ -885,7 +888,7 @@ Across 460 training baseline runs (Table~\ref{{tab:sa_summary}}, Figure~\ref{{fi
 \label{{eq:robust_z}}
 z_{{is}} = \frac{{x_{{is}} - \operatorname{{median}}_s(x)}}{{1.4826\,\mathrm{{MAD}}_s(x)}}.
 \end{{equation}}
-Figure~\ref{{fig:site_context}} displays these training levels strictly at candidate coordinates as monitoring context rather than a continuous pressure surface \parencite{{robinson2014npl}}.
+Figure~\ref{{fig:site_context}} extends that baseline across all ten candidate South African sites strictly over $17{{,}}487$ held-out real 15-minute windows (zero training or \texttt{{Test.csv}} overlap), pairing an exact $h(f)$-invariant vessel-like transient proxy labeled strictly as \textit{{relative acoustic activity}} with total-sound Baseline~$B_0$, analytical \texttt{{Physics\_Robust\_q20}}, and 1,000-draw calendar-day block bootstrap 95\% intervals \parencite{{robinson2014npl}}. Held-out real windows cover six future development periods plus completely unseen Fish Hoek ({int(sa_site.loc['09_Fish_Hoek','calendar_days'])}\,d, {sa_site.loc['09_Fish_Hoek','rel_vessel_activity_pct']:.1f}\%, provisional CI 0.0--{sa_site.loc['09_Fish_Hoek','rel_ci95_high_pct']:.1f}\%) and Sea Point ({int(sa_site.loc['10_Sea_Point','calendar_days'])}\,d, {sa_site.loc['10_Sea_Point','rel_vessel_activity_pct']:.1f}\%, provisional CI {sa_site.loc['10_Sea_Point','rel_ci95_low_pct']:.1f}--{sa_site.loc['10_Sea_Point','rel_ci95_high_pct']:.1f}\%), inverting uncalibrated total-sound rankings at Bird Island ({sa_site.loc['04_Bird_Island','total_sound_median_db']:.1f}\,dB vs.\ {sa_site.loc['04_Bird_Island','rel_vessel_activity_pct']:.1f}\%) and Sea Point ({sa_site.loc['10_Sea_Point','total_sound_median_db']:.1f}\,dB). Across a stratified sample ($n={sa_sum['sampled_model_windows']:,}$), observed HF excess $R(t,f)$ separates vessel-like passages ({sa_sup.loc[('all_heldout_8_sites','strict_hf_ship'),'obs_hf_peak_r_db']:.1f}\,dB) from ambient background ({sa_sup.loc[('all_heldout_8_sites','ambient_normal'),'obs_hf_peak_r_db']:.1f}\,dB), while \texttt{{Physics\_Robust\_q20}} inflates unmixed false share to {sa_sum['overall_physics_q20_false_share']:.3f} vs.\ {sa_sum['overall_ensemble_v4_false_share']:.3f} for \texttt{{Ensemble\_v4}}.
 
 \begin{{table}}[!htbp]
 \centering
@@ -911,8 +914,8 @@ Monitoring Site & Runs & Recorders & Median Level & Conditional 95\% CI & Within
 
 \begin{{figure}}[!htbp]
 \centering
-\includegraphics[width=0.66\textwidth]{{figures/fig2_site_context_map.png}}
-\caption{{Non-interpolated total-sound site context at candidate coordinates (marker area proportional to runs; red cross flags Saldanha Bay's unresolved secondary coordinate).}}
+\includegraphics[width=0.95\textwidth]{{figures/fig2_site_context_map.png}}
+\caption{{Site-level \textit{{relative acoustic activity}} across 17,487 held-out real South African windows ($n=10$ candidate sites; zero spatial interpolation): (a) non-interpolated map contrasting 6 held-out development periods, 2 unseen sites, 2 excluded $<15$-min sites, and Saldanha Bay's unresolved dual coordinate (red cross); (b) $h(f)$-invariant vessel-like transient rate with 95\% day-block CIs ($*$provisional $<5$\,d) vs.\ total-sound Baseline~$B_0$; and (c) held-out observed HF excess $R(t,f)$ support and \texttt{{Physics\_q20}} vs.\ \texttt{{Ensemble\_v4}} background specificity.}}
 \label{{fig:site_context}}
 \end{{figure}}
 
@@ -1150,14 +1153,14 @@ Scope & Group / Stratum & $n$ & v2 ($1-\mathrm{{RMSE}}$ / AUC) & v3 ($1-\mathrm{
 
 \section{{Evidentiary Boundaries and Modeling~v5 Contingency}}
 
-Three physical measurement boundaries remain outside this dataset's scope: (a) missing per-hydrophone sensitivity constants prohibit absolute $\mathrm{{dB\,re\,1\,\mu Pa}}$ pressure calibration \parencite{{iso2017underwater,robinson2014npl}}; (b) candidate site coordinates lacking confirmed deployment geometry prevent validated shipping-noise surfaces \parencite{{ainslie2020adeon,farcas2020shipping}}; and (c) zero synchronized AIS field logs accompany evaluation windows. Should Candidate~\#3 (\path{{submissions/candidate_v4_ensemble.csv}}) exhibit residual scoring bias under unseen hardware on Zindi, my documented Modeling~v5 contingency isolates \texttt{{score\_added\_vessel}} strictly to exact $h(f)$-invariant \texttt{{R\_*}}, PCEN, and RPCA features paired with \texttt{{ResNorm}} \parencite{{kim2021resnorm}} and \texttt{{Freq-MixStyle}} \parencite{{zhou2021mixstyle}} without CNN tilt-sensitive channels.
+Three physical measurement boundaries remain outside this dataset's scope: (a) missing per-hydrophone sensitivity constants prohibit absolute $\mathrm{{dB\,re\,1\,\mu Pa}}$ pressure calibration \parencite{{iso2017underwater,robinson2014npl}}; (b) candidate site coordinates lacking confirmed deployment geometry prevent interpolated shipping-noise surfaces \parencite{{ainslie2020adeon,farcas2020shipping}}, which I address per official Zindi staff guidance (\texttt{{daniil\_zindi}}, 24 Nov 2026) via site-level \textit{{relative acoustic activity}} mapping anchored to held-out signals, baselines, and uncertainty bounds; and (c) zero synchronized AIS field logs accompany evaluation windows. Should Candidate~\#3 (\path{{submissions/candidate_v4_ensemble.csv}}) exhibit residual scoring bias under unseen hardware on Zindi, my documented Modeling~v5 contingency isolates \texttt{{score\_added\_vessel}} strictly to exact $h(f)$-invariant \texttt{{R\_*}}, PCEN, and RPCA features paired with \texttt{{ResNorm}} \parencite{{kim2021resnorm}} and \texttt{{Freq-MixStyle}} \parencite{{zhou2021mixstyle}} without CNN tilt-sensitive channels.
 
 \section{{Reproducibility, Executed Notebooks, and Code Verification}}
 
 Every figure, table, and submission prediction is bit-exact reproducible across any clean Python~3.13 environment matching the 125 non-AutoML dependencies in \path{{requirements.txt}}:
 \begin{{itemize}}
-    \item \textbf{{Single-command verification:}} \path{{scripts/reproduce_pipeline.py}} (\texttt{{-{{}}-mode verify-only}}) checks pinned environment versions, SHA-256 digests, and six independent deterministic self-tests (\texttt{{v2}}, \texttt{{v3}}, \texttt{{v4\_simulator}}, \texttt{{v4\_features}}, \texttt{{v4\_train}}, and \texttt{{standardized\_evaluation\_suite}}). Subprocess reloads of \path{{models/v4/bundle_v4.joblib}} (zero custom \texttt{{\_\_main\_\_}} classes) match saved predictions within $\le 3.55 \times 10^{{-9}}$ share / $0.0$ score, while $+37.5$\,dB constant shifts produce $0.0$ holdout difference.
-    \item \textbf{{Notebooks and Zindi-compliant archives:}} Three executed notebooks (\texttt{{01}} EDA/experiments, \texttt{{02}} V2 11-model benchmark, \texttt{{03}} \texttt{{v2->v3->v4}} generalization and standards) ship alongside the $<10$\,MB runnable code package \path{{research_and_modeling_code_final.zip}} (40 scripts, zero raw audio or competition test data) and preserved V6 archive \path{{research_code_v6.zip}} ({v6_verif['code_archive']['bytes']} bytes), keeping \texttt{{Test.csv}} strictly inference-only.
+    \item \textbf{{Single-command verification:}} \path{{scripts/reproduce_pipeline.py}} (\texttt{{-{{}}-mode verify-only}}) checks pinned environment versions, SHA-256 digests, and seven independent deterministic self-tests (\texttt{{v2}}, \texttt{{v3}}, \texttt{{v4\_simulator}}, \texttt{{v4\_features}}, \texttt{{v4\_train}}, \texttt{{standards\_suite}}, and \texttt{{sa\_site\_activity}}). Subprocess reloads of \path{{models/v4/bundle_v4.joblib}} (zero custom \texttt{{\_\_main\_\_}} classes) match saved predictions within $\le 3.55 \times 10^{{-9}}$ share / $0.0$ score, while $+37.5$\,dB constant shifts produce $0.0$ holdout difference.
+    \item \textbf{{Notebooks and Zindi-compliant archives:}} Three executed notebooks (\texttt{{01}} EDA/experiments, \texttt{{02}} V2 11-model benchmark, \texttt{{03}} \texttt{{v2->v3->v4}} generalization, standards, and site-level relative acoustic activity) ship alongside the $<10$\,MB runnable code package \path{{research_and_modeling_code_final.zip}} (41 scripts, zero raw audio or competition test data) and preserved V6 archive \path{{research_code_v6.zip}} ({v6_verif['code_archive']['bytes']} bytes), keeping \texttt{{Test.csv}} strictly inference-only.
 \end{{itemize}}
 
 \section{{Conclusion}}
@@ -1390,7 +1393,7 @@ def verify_code_archive(zip_path: Path) -> dict:
             )
 
         py_files = sorted((workdir / "scripts").glob("*.py"))
-        assert len(py_files) == 40, f"Expected 40 extracted scripts, got {len(py_files)}"
+        assert len(py_files) == 41, f"Expected 41 extracted scripts, got {len(py_files)}"
         for py in py_files:
             py_compile.compile(str(py), doraise=True)
 
@@ -1405,6 +1408,7 @@ def verify_code_archive(zip_path: Path) -> dict:
             "scripts/modeling_v3_train.py",
             "scripts/modeling_v4_train.py",
             "scripts/standardized_evaluation_suite.py",
+            "scripts/evaluate_sa_relative_vessel_activity.py",
         ]:
             res = subprocess.run(
                 [sys.executable, test_script, "--self-test-only"],
@@ -1422,7 +1426,7 @@ def verify_code_archive(zip_path: Path) -> dict:
         "code_zip_bytes": zip_bytes,
         "code_zip_sha256": _sha256(zip_path),
         "code_zip_entries": len(names),
-        "code_zip_scripts": 40,
+        "code_zip_scripts": 41,
         "code_zip_notebooks": 3,
         "code_zip_self_test": "PASS",
     }
@@ -1453,6 +1457,7 @@ def build_unified_code_archive(out_zip: Path) -> dict:
         "scripts/modeling_v4_simulator.py",
         "scripts/modeling_v4_train.py",
         "scripts/standardized_evaluation_suite.py",
+        "scripts/evaluate_sa_relative_vessel_activity.py",
         "scripts/reproduce_pipeline.py",
         "scripts/build_modeling_notebook_02.py",
         "scripts/build_modeling_notebook_03.py",
@@ -1461,7 +1466,7 @@ def build_unified_code_archive(out_zip: Path) -> dict:
         "scripts/build_overleaf_manuscript.py",
     ]
     all_script_rels = sorted(set(v6_scripts + extra_scripts))
-    assert len(all_script_rels) == 40, f"Expected 40 unique scripts, got {len(all_script_rels)}"
+    assert len(all_script_rels) == 41, f"Expected 41 unique scripts, got {len(all_script_rels)}"
 
     # Verify via AST that no local scripts/*.py dependency is missing
     available_stems = {p.stem for p in (ROOT / "scripts").glob("*.py")}
@@ -1497,6 +1502,8 @@ def build_unified_code_archive(out_zip: Path) -> dict:
         (ROOT / "notebooks/02_vessel_noise_modeling.ipynb", "notebooks/02_vessel_noise_modeling.ipynb"),
         (ROOT / "notebooks/03_domain_generalization_v3_v4_and_standards.ipynb", "notebooks/03_domain_generalization_v3_v4_and_standards.ipynb"),
         (ROOT / "deliverables/research_submission/training_only_site_aggregates.csv", "site_context/training_only_site_aggregates.csv"),
+        (ROOT / "reports/standards_benchmark/sa_site_relative_vessel_activity.csv", "site_context/sa_site_relative_vessel_activity.csv"),
+        (ROOT / "reports/standards_benchmark/sa_heldout_signal_support.csv", "site_context/sa_heldout_signal_support.csv"),
         (ROOT / "docs/metadata/hearmyship_split_v1.csv", "metadata/hearmyship_split_v1.csv"),
         (MAIN_TEX, "manuscript/main.tex"),
         (BIB_FILE, "manuscript/references.bib"),

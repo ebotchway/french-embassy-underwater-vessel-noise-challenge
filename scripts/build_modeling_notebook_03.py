@@ -353,6 +353,28 @@ assert np.max(np.abs(sh_a - sh_b)) < 1e-6 and np.max(np.abs(sc_a - sc_b)) < 1e-6
 """
     )
 
+    md(
+        """
+## 6. Held-Out South African Site-Level Relative Acoustic Activity & Observed-Signal Support (Zindi Staff Compliance)
+
+Per official Zindi staff spatial-rubric guidance (`daniil_zindi`, 24 Nov 2026), an uninterpolated total-sound map provides context only. Below, I load `reports/standards_benchmark/sa_site_relative_vessel_activity.csv` and `reports/standards_benchmark/sa_heldout_signal_support.csv` (generated strictly over **17,487 held-out real 15-minute windows** across `6` future development periods and `2` unseen holdout sites `09_Fish_Hoek` & `10_Sea_Point`, with zero training or `Test.csv` overlap), contrast `h(f)`-invariant **relative acoustic activity** against total-sound Baseline `B0` and analytical `Physics_Robust_q20` with **1,000-draw calendar-day block bootstrap 95% CIs**, and display the upgraded 3-panel **Figure 2**.
+"""
+    )
+
+    code(
+        """
+sa_site = pd.read_csv(ROOT / "reports/standards_benchmark/sa_site_relative_vessel_activity.csv")
+sa_sup = pd.read_csv(ROOT / "reports/standards_benchmark/sa_heldout_signal_support.csv")
+display(sa_site[[
+    "display_name", "eval_scope", "windows_heldout", "calendar_days", "provisional_low_days",
+    "rel_vessel_activity_pct", "rel_ci95_low_pct", "rel_ci95_high_pct",
+    "total_sound_median_db", "physics_q20_mean_share", "ensemble_v4_mean_share"
+]].round(4))
+display(sa_sup.round(4))
+display(Image(filename=str(ROOT / "reports/standards_benchmark/figures/fig2_site_relative_acoustic_activity_map.png"), width=920))
+"""
+    )
+
     nb["cells"] = cells
     nb["metadata"] = {
         "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},

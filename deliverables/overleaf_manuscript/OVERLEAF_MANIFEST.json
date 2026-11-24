@@ -1,17 +1,17 @@
 {
   "overleaf_dir": "deliverables/overleaf_manuscript",
   "zip_path": "deliverables/overleaf_manuscript/overleaf_research_manuscript.zip",
-  "zip_bytes": 2338992,
-  "zip_sha256": "711ec5394c2d9fa61d796f7a5c8ad62f01800b575e283e286390227ff81e9448",
+  "zip_bytes": 2614708,
+  "zip_sha256": "41347a45f17f6f5bfc39c184b888c0f890fa321281a5460a44605e9fd3b04a46",
   "zip_entries": 11,
-  "main_tex_sha256": "f3aecfcc5f57e18b3ed5d17897be1fc50d887e8dcb9c6d4e135ab167df59a4be",
+  "main_tex_sha256": "2f93c8662b7c10a1b5de82cd2f3c6329e69fcf0897e578c9acae42960ecd2e37",
   "references_bib_sha256": "06688500e6a0e86fe9c83357c7e61e229d2d07e7d571aee862eeb5426cf0609d",
   "validation": {
     "figures_verified": 8,
     "labels_verified": 23,
     "citations_verified": 28,
     "bib_entries": 28,
-    "approx_body_words": 3578
+    "approx_body_words": 3763
   },
   "figures": {
     "fig1_sa_real_acoustics.png": {
@@ -21,10 +21,10 @@
       "sha256": "6d17d61e89f36f201661f80137eabb0d62b0c0ead7d3b7a0a14b009ce3574e4e"
     },
     "fig2_site_context_map.png": {
-      "bytes": 210460,
-      "width": 2366,
-      "height": 1198,
-      "sha256": "8d050bf728d3231dac8c43511468d30cd4029bd8336e0eb3bc77158bc20bc77d"
+      "bytes": 496236,
+      "width": 4645,
+      "height": 1397,
+      "sha256": "8d8d56fef1d0be008fd03134bc6cb5178f4a1ff754c3e5e6fe50bbf304238e26"
     },
     "fig3_spectral_structure_mismatch.png": {
       "bytes": 399430,
@@ -64,16 +64,16 @@
     }
   },
   "code_zip_path": "deliverables/overleaf_manuscript/research_and_modeling_code_final.zip",
-  "code_zip_bytes": 3168570,
-  "code_zip_sha256": "8136c73689f970cd4359d8230ab1bac8601338c515c3a0c95ab7863d513ad92f",
-  "code_zip_entries": 58,
-  "code_zip_scripts": 40,
+  "code_zip_bytes": 3663760,
+  "code_zip_sha256": "23db12e2c6df6992b987f2d877305c5f23f21efc38c2e8edd90c1b13f5a39ed6",
+  "code_zip_entries": 61,
+  "code_zip_scripts": 41,
   "code_zip_notebooks": 3,
   "code_zip_self_test": "PASS",
   "pdf_path": "deliverables/overleaf_manuscript/research_manuscript_latex.pdf",
   "pdf_pages": 10,
-  "pdf_bytes": 2925990,
-  "pdf_sha256": "a231e766d2f192f77d640366c0d5f452076a028d0c8d73a06aa0add41c7686a2",
+  "pdf_bytes": 3227606,
+  "pdf_sha256": "2f0280930b87afd56128ae435b74e72aeeeb32b60ba967b6a89001c25a7f13c4",
   "overfull_hbox_count": 0,
   "overfull_hbox_lines": []
 }

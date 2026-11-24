@@ -120,7 +120,7 @@ Across 460 training baseline runs (Table~\ref{tab:sa_summary}, Figure~\ref{fig:s
 \label{eq:robust_z}
 z_{is} = \frac{x_{is} - \operatorname{median}_s(x)}{1.4826\,\mathrm{MAD}_s(x)}.
 \end{equation}
-Figure~\ref{fig:site_context} displays these training levels strictly at candidate coordinates as monitoring context rather than a continuous pressure surface \parencite{robinson2014npl}.
+Figure~\ref{fig:site_context} extends that baseline across all ten candidate South African sites strictly over $17{,}487$ held-out real 15-minute windows (zero training or \texttt{Test.csv} overlap), pairing an exact $h(f)$-invariant vessel-like transient proxy labeled strictly as \textit{relative acoustic activity} with total-sound Baseline~$B_0$, analytical \texttt{Physics\_Robust\_q20}, and 1,000-draw calendar-day block bootstrap 95\% intervals \parencite{robinson2014npl}. Held-out real windows cover six future development periods plus completely unseen Fish Hoek (4\,d, 1.0\%, provisional CI 0.0--2.9\%) and Sea Point (3\,d, 3.3\%, provisional CI 1.8--4.3\%), inverting uncalibrated total-sound rankings at Bird Island (91.2\,dB vs.\ 1.3\%) and Sea Point (57.0\,dB). Across a stratified sample ($n=2,341$), observed HF excess $R(t,f)$ separates vessel-like passages (19.3\,dB) from ambient background (2.5\,dB), while \texttt{Physics\_Robust\_q20} inflates unmixed false share to 0.511 vs.\ 0.016 for \texttt{Ensemble\_v4}.
 
 \begin{table}[!htbp]
 \centering
@@ -151,8 +151,8 @@ Monitoring Site & Runs & Recorders & Median Level & Conditional 95\% CI & Within
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.66\textwidth]{figures/fig2_site_context_map.png}
-\caption{Non-interpolated total-sound site context at candidate coordinates (marker area proportional to runs; red cross flags Saldanha Bay's unresolved secondary coordinate).}
+\includegraphics[width=0.95\textwidth]{figures/fig2_site_context_map.png}
+\caption{Site-level \textit{relative acoustic activity} across 17,487 held-out real South African windows ($n=10$ candidate sites; zero spatial interpolation): (a) non-interpolated map contrasting 6 held-out development periods, 2 unseen sites, 2 excluded $<15$-min sites, and Saldanha Bay's unresolved dual coordinate (red cross); (b) $h(f)$-invariant vessel-like transient rate with 95\% day-block CIs ($*$provisional $<5$\,d) vs.\ total-sound Baseline~$B_0$; and (c) held-out observed HF excess $R(t,f)$ support and \texttt{Physics\_q20} vs.\ \texttt{Ensemble\_v4} background specificity.}
 \label{fig:site_context}
 \end{figure}
 
@@ -419,14 +419,14 @@ Scope & Group / Stratum & $n$ & v2 ($1-\mathrm{RMSE}$ / AUC) & v3 ($1-\mathrm{RM
 
 \section{Evidentiary Boundaries and Modeling~v5 Contingency}
 
-Three physical measurement boundaries remain outside this dataset's scope: (a) missing per-hydrophone sensitivity constants prohibit absolute $\mathrm{dB\,re\,1\,\mu Pa}$ pressure calibration \parencite{iso2017underwater,robinson2014npl}; (b) candidate site coordinates lacking confirmed deployment geometry prevent validated shipping-noise surfaces \parencite{ainslie2020adeon,farcas2020shipping}; and (c) zero synchronized AIS field logs accompany evaluation windows. Should Candidate~\#3 (\path{submissions/candidate_v4_ensemble.csv}) exhibit residual scoring bias under unseen hardware on Zindi, my documented Modeling~v5 contingency isolates \texttt{score\_added\_vessel} strictly to exact $h(f)$-invariant \texttt{R\_*}, PCEN, and RPCA features paired with \texttt{ResNorm} \parencite{kim2021resnorm} and \texttt{Freq-MixStyle} \parencite{zhou2021mixstyle} without CNN tilt-sensitive channels.
+Three physical measurement boundaries remain outside this dataset's scope: (a) missing per-hydrophone sensitivity constants prohibit absolute $\mathrm{dB\,re\,1\,\mu Pa}$ pressure calibration \parencite{iso2017underwater,robinson2014npl}; (b) candidate site coordinates lacking confirmed deployment geometry prevent interpolated shipping-noise surfaces \parencite{ainslie2020adeon,farcas2020shipping}, which I address per official Zindi staff guidance (\texttt{daniil\_zindi}, 24 Nov 2026) via site-level \textit{relative acoustic activity} mapping anchored to held-out signals, baselines, and uncertainty bounds; and (c) zero synchronized AIS field logs accompany evaluation windows. Should Candidate~\#3 (\path{submissions/candidate_v4_ensemble.csv}) exhibit residual scoring bias under unseen hardware on Zindi, my documented Modeling~v5 contingency isolates \texttt{score\_added\_vessel} strictly to exact $h(f)$-invariant \texttt{R\_*}, PCEN, and RPCA features paired with \texttt{ResNorm} \parencite{kim2021resnorm} and \texttt{Freq-MixStyle} \parencite{zhou2021mixstyle} without CNN tilt-sensitive channels.
 
 \section{Reproducibility, Executed Notebooks, and Code Verification}
 
 Every figure, table, and submission prediction is bit-exact reproducible across any clean Python~3.13 environment matching the 125 non-AutoML dependencies in \path{requirements.txt}:
 \begin{itemize}
-    \item \textbf{Single-command verification:} \path{scripts/reproduce_pipeline.py} (\texttt{-{}-mode verify-only}) checks pinned environment versions, SHA-256 digests, and six independent deterministic self-tests (\texttt{v2}, \texttt{v3}, \texttt{v4\_simulator}, \texttt{v4\_features}, \texttt{v4\_train}, and \texttt{standardized\_evaluation\_suite}). Subprocess reloads of \path{models/v4/bundle_v4.joblib} (zero custom \texttt{\_\_main\_\_} classes) match saved predictions within $\le 3.55 \times 10^{-9}$ share / $0.0$ score, while $+37.5$\,dB constant shifts produce $0.0$ holdout difference.
-    \item \textbf{Notebooks and Zindi-compliant archives:} Three executed notebooks (\texttt{01} EDA/experiments, \texttt{02} V2 11-model benchmark, \texttt{03} \texttt{v2->v3->v4} generalization and standards) ship alongside the $<10$\,MB runnable code package \path{research_and_modeling_code_final.zip} (40 scripts, zero raw audio or competition test data) and preserved V6 archive \path{research_code_v6.zip} (79620 bytes), keeping \texttt{Test.csv} strictly inference-only.
+    \item \textbf{Single-command verification:} \path{scripts/reproduce_pipeline.py} (\texttt{-{}-mode verify-only}) checks pinned environment versions, SHA-256 digests, and seven independent deterministic self-tests (\texttt{v2}, \texttt{v3}, \texttt{v4\_simulator}, \texttt{v4\_features}, \texttt{v4\_train}, \texttt{standards\_suite}, and \texttt{sa\_site\_activity}). Subprocess reloads of \path{models/v4/bundle_v4.joblib} (zero custom \texttt{\_\_main\_\_} classes) match saved predictions within $\le 3.55 \times 10^{-9}$ share / $0.0$ score, while $+37.5$\,dB constant shifts produce $0.0$ holdout difference.
+    \item \textbf{Notebooks and Zindi-compliant archives:} Three executed notebooks (\texttt{01} EDA/experiments, \texttt{02} V2 11-model benchmark, \texttt{03} \texttt{v2->v3->v4} generalization, standards, and site-level relative acoustic activity) ship alongside the $<10$\,MB runnable code package \path{research_and_modeling_code_final.zip} (41 scripts, zero raw audio or competition test data) and preserved V6 archive \path{research_code_v6.zip} (79620 bytes), keeping \texttt{Test.csv} strictly inference-only.
 \end{itemize}
 
 \section{Conclusion}
