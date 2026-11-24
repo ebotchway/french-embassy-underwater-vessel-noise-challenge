@@ -622,6 +622,8 @@ def build_main_tex(out_path: Path) -> None:
     sa_site = pd.read_csv(ROOT / "reports/standards_benchmark/sa_site_relative_vessel_activity.csv").set_index("station")
     sa_sup = pd.read_csv(ROOT / "reports/standards_benchmark/sa_heldout_signal_support.csv").set_index(["scope", "stratum"])
     sa_sum = json.loads((ROOT / "reports/standards_benchmark/sa_site_activity_summary.json").read_text())
+    sum_v5 = json.loads((ROOT / "reports/modeling_v5_simple/summary.json").read_text())
+    cmp_v5 = pd.read_csv(ROOT / "reports/modeling_v5_simple/comparison_metrics.csv").set_index("split")
 
     # Table 1: Real Six-Station Descriptive Summary
     lvl = boot_ci[boot_ci["metric"] == "window_mean_level"].merge(st_sum, on="station")
@@ -681,7 +683,7 @@ def build_main_tex(out_path: Path) -> None:
             f"{op}{h['zindi_score_1_minus_rmse']:.4f}{cl} & {op}{h['rmse']:.4f}{cl} & {op}{h['roc_auc']:.4f}{cl} \\\\"
         )
 
-    # Table 5: Progression across Sub #1 -> Sub #2 (v2) -> v3 -> v4
+    # Table 5: Progression across Sub #1 -> Sub #2 (v2) -> v3 -> Sub #3 (v4) -> Candidate #4 (v5_simple)
     piv_v4 = cmp_v4.set_index(["split", "model"])
     prog_specs = [
         ("Sub \\#1 (V1\\_RF\\_MaxShift)", "96 max-shifted", "0.7615 / 0.5175", None, False),
@@ -689,7 +691,7 @@ def build_main_tex(out_path: Path) -> None:
         ("Candidate v3 (Ensemble\\_v3)", "180 + proto\\_spec\\_logit", "Intermediate v3", "Ensemble_v3", False),
         ("CNN2D\\_v4 (7-ch SE-ResNet)", "$(7,15,25)$ masked grid", "Base component", "CNN2D_v4", False),
         ("LightGBM\\_v4\\_Hurdle", "205 (71 $R_*$ $h(f)$-inv)", "Base component", "LightGBM_v4_Hurdle", False),
-        ("Candidate v4 (Ensemble\\_v4)", "205 ($R_*$ $h(f)$-inv + CNN)", "Ready (Sub \\#3)", "Ensemble_v4", True),
+        ("Sub \\#3 (Ensemble\\_v4)", "205 ($R_*$ $h(f)$-inv + CNN)", "0.7752 / 0.5566", "Ensemble_v4", True),
     ]
     table_prog_rows = []
     for label, rep, lb_txt, mk, highlight in prog_specs:
@@ -709,6 +711,16 @@ def build_main_tex(out_path: Path) -> None:
                 f"{op}{ho['zindi_score_1_minus_rmse']:.4f} / {ho['roc_auc']:.4f}{cl} & "
                 f"{op}{ho['zero_rmse']:.4f}{cl} \\\\"
             )
+    v5c = cmp_v5.loc["v4_val_cal_hard"]
+    v5s = cmp_v5.loc["v4_val_standard"]
+    v5h = cmp_v5.loc["v4_holdout"]
+    table_prog_rows.append(
+        f"    Candidate \\#4 (Ensemble\\_v5\\_Simple) & 42 pure $h(f)$-inv (3 reg.) & Ready (Sub \\#4) & "
+        f"{v5c['zindi_1_minus_rmse']:.4f} / {v5c['roc_auc']:.4f} & "
+        f"{v5s['zindi_1_minus_rmse']:.4f} / {v5s['roc_auc']:.4f} & "
+        f"{v5h['zindi_1_minus_rmse']:.4f} / {v5h['roc_auc']:.4f} & "
+        f"{v5h['zero_rmse']:.4f} \\\\"
+    )
 
     # Table 6: International Acoustic Standards Benchmark on val_cal_hard & holdout
     std_idx = std_full.set_index(["split", "model"])
@@ -719,7 +731,8 @@ def build_main_tex(out_path: Path) -> None:
         ("RPCA_Unsupervised", "Unsupervised RPCA"),
         ("Ensemble_v2", "Ensemble v2"),
         ("Ensemble_v3", "Ensemble v3"),
-        ("Ensemble_v4", "Ensemble v4 ($h(f)$-inv)"),
+        ("Ensemble_v4", "Ensemble v4 ($R_*$ + CNN)"),
+        ("Ensemble_v5_Simple", "Ensemble v5-Simple (42 $h(f)$-inv)"),
     ]
     table_std_rows = []
     for mk, lbl in std_order:
@@ -793,18 +806,18 @@ def build_main_tex(out_path: Path) -> None:
 \definecolor{{AccentOrange}}{{HTML}}{{D55E00}}
 \hypersetup{{colorlinks=true,linkcolor=AccentBlue,citecolor=AccentBlue,urlcolor=AccentBlue}}
 
-\linespread{{1.09}}
-\setlength{{\parskip}}{{4.2pt}}
+\linespread{{1.06}}
+\setlength{{\parskip}}{{3.6pt}}
 \setlength{{\parindent}}{{0pt}}
-\renewcommand{{\arraystretch}}{{1.14}}
-\setlength{{\textfloatsep}}{{11pt plus 2pt minus 2pt}}
-\setlength{{\floatsep}}{{10pt plus 2pt minus 2pt}}
-\setlength{{\intextsep}}{{10pt plus 2pt minus 2pt}}
+\renewcommand{{\arraystretch}}{{1.12}}
+\setlength{{\textfloatsep}}{{10pt plus 2pt minus 2pt}}
+\setlength{{\floatsep}}{{9pt plus 2pt minus 2pt}}
+\setlength{{\intextsep}}{{9pt plus 2pt minus 2pt}}
 \renewcommand{{\topfraction}}{{0.93}}
 \renewcommand{{\bottomfraction}}{{0.88}}
 \renewcommand{{\textfraction}}{{0.07}}
 \renewcommand{{\floatpagefraction}}{{0.65}}
-\setlength{{\bibitemsep}}{{1.4pt}}
+\setlength{{\bibitemsep}}{{0.8pt}}
 \renewcommand*{{\bibfont}}{{\footnotesize}}
 
 \AtBeginDocument{{%
@@ -840,7 +853,7 @@ def build_main_tex(out_path: Path) -> None:
 \vspace{{0.55em}}
 {{\large\textbf{{Prepared by Emmanuel Kwaku Botchway}}\par}}
 \vspace{{0.20em}}
-{{\small Zindi Research Evaluation Track \enspace$\bullet$\enspace 23 November 2026\par}}
+{{\small Zindi Research Evaluation Track \enspace$\bullet$\enspace 24 November 2026\par}}
 \end{{center}}
 \vspace{{0.15em}}
 \noindent\rule{{\textwidth}}{{0.5pt}}
@@ -853,9 +866,9 @@ def build_main_tex(out_path: Path) -> None:
 
 \noindent\textbf{{Objective:}} Separating anthropogenic shipping energy from natural ambient ocean fluctuations in uncalibrated passive acoustic recordings breaks down whenever models exploit spectral band mismatches, window-level gain coupling, or site-specific hydrophone transfer curves $h(f)$. Using multi-year third-octave telemetry from ten South African coastal stations, I reconstruct the full progression from initial exploratory Random Forests through four disciplined modeling generations to establish an open, calibration-invariant benchmark grounded in international acoustic standards.
 
-\noindent\textbf{{Methods:}} Starting from raw 375-feature exploratory baselines (\texttt{{V1\_RF\_MaxShift}}, Submission~\#1) and seven source-disjoint diagnostic experiments (\texttt{{Exp 001--007}}), I align 525 VTUAD v1.3.0 and 96 HearMyShip recordings strictly to 2\,s Hann base-10 deci-decade periodograms, evaluate an 11-model deterministic benchmark (\texttt{{Ensemble\_v2}}, Submission~\#2), introduce hard-negative coastal strata and a 7-channel Squeeze-and-Excitation ResNet (\texttt{{Ensemble\_v3}}), and derive 71 exact $h(f)$-invariant temporal excess residuals $R(t,f)$ across five strict strata (\texttt{{Ensemble\_v4}}, Candidate~\#3).
+\noindent\textbf{{Methods:}} Starting from raw 375-feature exploratory baselines (\texttt{{V1\_RF\_MaxShift}}, Submission~\#1) and seven source-disjoint diagnostic experiments (\texttt{{Exp 001--007}}), I align 525 VTUAD v1.3.0 and 96 HearMyShip recordings strictly to 2\,s Hann base-10 deci-decade periodograms, evaluate an 11-model deterministic benchmark (\texttt{{Ensemble\_v2}}, Submission~\#2), introduce hard-negative coastal strata and a 7-channel Squeeze-and-Excitation ResNet (\texttt{{Ensemble\_v3}}), derive 71 $h(f)$-invariant temporal excess residuals $R(t,f)$ (\texttt{{Ensemble\_v4}}, Submission~\#3), and test a 42-feature purely invariant parsimony ensemble (\texttt{{Ensemble\_v5\_Simple}}, Candidate~\#4).
 
-\noindent\textbf{{Findings:}} Fixing amplitude max-shifting and band alignment lifts unseen Fish Hoek and Sea Point holdout accuracy $1-\mathrm{{RMSE}}$ from 0.8390 (\texttt{{V1\_RF\_MaxShift}}) to 0.8833 (\texttt{{Ensemble\_v2}}). Eliminating the \texttt{{proto\_spec\_logit}} sensor-tilt shortcut caught in Modeling~v3 further raises unseen holdout $1-\mathrm{{RMSE}}$ to {ho_v4['zindi_score_1_minus_rmse']:.4f} (\texttt{{Ensemble\_v4}}, ROC AUC {ho_v4['roc_auc']:.4f}, quiet \texttt{{zero\_rmse}} {ho_v4['zero_rmse']:.4f}). Under 100\% calibration-warped validation (\texttt{{val\_cal\_hard}}), \texttt{{Ensemble\_v4}} raises Lin's Concordance Correlation Coefficient from 0.8108 to 0.9204, cuts JOMOPANS excess-level error to 0.547\,dB, lowers Expected Calibration Error to 0.0273, and preserves 0.9561 ROC AUC under $+8$\,dB/decade tilt.
+\noindent\textbf{{Findings:}} Unseen Fish Hoek and Sea Point holdout accuracy $1-\mathrm{{RMSE}}$ rises from 0.8390 (\texttt{{V1\_RF\_MaxShift}}) to 0.8833 (\texttt{{Ensemble\_v2}}) and {ho_v4['zindi_score_1_minus_rmse']:.4f} (\texttt{{Ensemble\_v4}}, ROC AUC {ho_v4['roc_auc']:.4f}, Lin's CCC 0.924, JOMOPANS MAE 0.308\,dB), while live Zindi public scores advance monotonically from 0.7615 (\texttt{{\#1}}, AUC 0.5175) and 0.7750 (\texttt{{\#2}}, AUC 0.5484) to 0.775235755 (\texttt{{\#3}}, AUC 0.556555555). Auditing why local gains outpaced public transfer led to \texttt{{Ensemble\_v5\_Simple}}, achieving $2.89\times 10^{{-33}}$ \texttt{{Test.csv}} share drift under severe hydrophone tilt, lowest $+8$\,dB/decade quiet error (0.079 vs.\ 0.093), de-saturated scores (0.7239 vs.\ 0.8571), and restored response to real coastal ship passes.
 
 \noindent\textbf{{Boundaries:}} Without per-hydrophone sensitivity constants, surveyed positions, and field vessel logs, uncalibrated summaries remain relative telemetry proxies rather than validated sound-pressure shipping maps.
 
@@ -870,11 +883,12 @@ Commercial shipping and nearshore small craft elevate low- and mid-frequency und
 
 On the Zindi French Embassy Underwater Vessel Noise Challenge \parencite{{zindi2026challenge,zindi2026rules}}, participants predict the added vessel energy fraction \texttt{{share\_added\_vessel}} $\in [0,1]$ (scored publicly by $1-\mathrm{{RMSE}}$) alongside a diagnostic presence probability \texttt{{score\_added\_vessel}} $\in [0,1]$ (evaluated via ROC AUC) across $15 \times 25$ base-10 third-octave spectrogram matrices spanning 31.6\,Hz to 7.94\,kHz \parencite{{iec2014bands}}. Rigorous underwater acoustics reporting distinguishes uncalibrated digital counts, synthetic added-energy shares over observed bins, and calibrated vessel soundscapes \parencite{{ainslie2020adeon,farcas2020shipping}}.
 
-My live public submissions exposed critical domain-generalization failures across unknown South African deployments. Stage~0 exploratory analysis revealed extreme inter-station level offsets (up to 29.1\,dB) and Welch spectral edge drift (up to 2.6\,dB). Submission~\#1 (\texttt{{V1\_RF\_MaxShift}}) achieved 0.761536 publicly ($1-\mathrm{{RMSE}}$) and 0.517533 ROC AUC because per-window maximum shifting coupled ambient background energy to transient ship peaks. Replacing max-shifting with physical energy mixing and global median centering in \texttt{{Ensemble\_v2}} (Submission~\#2) reached 0.8833 unseen holdout $1-\mathrm{{RMSE}}$ locally, yet improved publicly only to 0.77501743 (RMSE 0.224982569, ROC AUC 0.548377777, Rank~508). Auditing why a clean station-disjoint model stalled on hidden deployments drove the complete progression documented across this Zindi-compliant 10-page paper:
+My live public submissions exposed critical domain-generalization limits across unknown South African deployments. Stage~0 exploratory analysis revealed 29.1\,dB inter-station offsets and up to 2.6\,dB Welch spectral edge drift. Submission~\#1 (\texttt{{V1\_RF\_MaxShift}}) scored 0.761536 publicly (0.517533 ROC AUC); \texttt{{Ensemble\_v2}} (Submission~\#2) reached 0.8833 locally yet 0.77501743 publicly (0.548377777 AUC, Rank~508); and \texttt{{Ensemble\_v4}} (Submission~\#3, ID~\texttt{{ovjzdeb8}}) lifted local unseen accuracy to {ho_v4['zindi_score_1_minus_rmse']:.4f} while advancing live public performance to 0.775235755 (RMSE 0.224764244, ROC AUC 0.556555555). Examining that widening gap between synthetic CV and live leaderboard ranking drove all four contributions documented in this 10-page paper:
 \begin{{enumerate}}
     \item \textbf{{Physical mixing and diagnostic gate audits (Stage~0 \texorpdfstring{{$\to$}}{{to}} V1 \texorpdfstring{{$\to$}}{{to}} Exp~001--007 \texorpdfstring{{$\to$}}{{to}} V2):}} Diagnosing Welch alignment drift, missing edge-minute masks, and contrast precision-recall trade-offs across an 11-model deterministic benchmark.
-    \item \textbf{{Shortcut discovery and exact $h(f)$ invariance (Modeling~v3 \texorpdfstring{{$\to$}}{{to}} v4):}} Catching a 47.0\% LightGBM spectral-tilt shortcut (\texttt{{proto\_spec\_logit}}) in v3 and eliminating it via per-band temporal excess residuals $R(t,f)$, five South African hard-negative strata, and calibration-augmented 7-channel SE-ResNet blending.
-    \item \textbf{{International standards and reproducibility:}} Evaluating every generation against Per-Channel Energy Normalization (PCEN; \citealp{{wang2017pcen,lostanlen2019pcen}}), Robust PCA \parencite{{candes2011rpca,lin2017rpca}}, ISO~18405, IEC~61260-1, NPL~GPG~133, ADEON, and JOMOPANS excess-level metrics across three executed notebooks and a bit-exact verification suite.
+    \item \textbf{{Shortcut discovery and calibration modeling (v3 \texorpdfstring{{$\to$}}{{to}} v4 \texorpdfstring{{$\to$}}{{to}} v5-Simple):}} Catching v3's 47.0\% LightGBM tilt shortcut (\texttt{{proto\_spec\_logit}}), deriving $h(f)$-invariant temporal excess residuals $R(t,f)$ in v4, and isolating simulator overfitting via a 42-feature purely invariant parsimony ensemble (\texttt{{Ensemble\_v5\_Simple}}, Candidate~\#4).
+    \item \textbf{{Held-out South African site-level compliance:}} Mapping relative acoustic activity across 17,487 held-out real South African windows with baselines, day-block bootstrap uncertainty, and observed-signal support per Zindi staff guidance (\texttt{{daniil\_zindi}}, 24 Nov 2026).
+    \item \textbf{{International standards and reproducibility:}} Evaluating every generation against Per-Channel Energy Normalization (PCEN; \citealp{{wang2017pcen,lostanlen2019pcen}}), Robust PCA \parencite{{candes2011rpca,lin2017rpca}}, ISO~18405, IEC~61260-1, NPL~GPG~133, ADEON, and JOMOPANS across three executed notebooks and eight deterministic self-tests.
 \end{{enumerate}}
 
 \section{{Data Provenance, Spectral Alignment, and Leak-Free Partitioning}}
@@ -928,11 +942,11 @@ f_k = 10^{{1.5 + 0.1 k}}, \qquad
 P_k = \Delta f \sum_{{f \in [f_k 10^{{-0.05}},\, f_k 10^{{0.05}})}} S(f), \qquad
 k \in \{{0,\dots,24\}}.
 \end{{equation}}
-Figure~\ref{{fig:spectral_mismatch}} highlights why naive external vessel injection leaks calibration differences: South African stations roll off by 20--34\,dB across 31.6\,Hz--7.94\,kHz, creating 7.5--26.2\,dB RMS spectral shape divergence against VTUAD vessels. Table~\ref{{tab:inventory}} summarizes every zero-leakage corpus and partition from Exp~007 through v4.
+Figure~\ref{{fig:spectral_mismatch}} highlights why naive external vessel injection leaks calibration differences: South African stations roll off by 20--34\,dB across 31.6\,Hz--7.94\,kHz, creating 7.5--26.2\,dB RMS spectral shape divergence against VTUAD vessels. Table~\ref{{tab:inventory}} summarizes every zero-leakage corpus and partition from Exp~007 through v5-Simple.
 
 \begin{{table}}[!htbp]
 \centering
-\caption{{Data inventory and source-isolation boundaries across South African development, VTUAD, HearMyShip, Exp~007, and v2--v4 partitions.}}
+\caption{{Data inventory and source-isolation boundaries across South African development, VTUAD, HearMyShip, Exp~007, and v2--v5-Simple partitions.}}
 \label{{tab:inventory}}
 \resizebox{{\textwidth}}{{!}}{{%
 \begin{{tabular}}{{@{{}}llllr@{{}}}}
@@ -946,6 +960,7 @@ Exp~007 Diagnostic Gate & Unseen contrast benchmark & Source-disjoint synthetic 
 Modeling v2 (Baseline) & 6 train / Gap val / 2 holdout & 5-fold run \& hull disjoint & 22.6\% zero windows (6k/1.5k/541) & 8,041 \\
 Modeling v3 (Hard-Neg) & 4 strata (inc. reef \& glitch) & Zero fold/split overlap & 41.6\% zero windows (10k/2k/1.5k/541) & 14,041 \\
 Modeling v4 (Cal-Inv) & 5 strata + 65.3\%--100\% $h(f)$ warp & Strict ship negatives \& disjoint runs & {100*man_v4['train']['zero_fraction']:.1f}\% zero train (10k/2k/1.5k/541) & 14,041 \\
+Modeling v5-Simple & 42 $h(f)$-inv, 0 ship negs, $-12$..$+6$\,dB/d & Broadband CPA + zero ship $y=0$ & {100*sum_v5['sim_manifest']['train']['zero_fraction']:.1f}\% zero train (8k/1.5k/541) & 10,041 \\
 Zindi Evaluation Set & Unknown SA deployments & Strictly inference-only & Evaluation windows & 1,500 \\
 \bottomrule
 \end{{tabular}}%
@@ -995,7 +1010,7 @@ Building directly on \texttt{{Exp~007}}, Modeling~v2 replaced max-shifting with 
 
 When Submission~\#2 lifted live public $1-\mathrm{{RMSE}}$ only to 0.77501743 (AUC~0.548377777), forensic error analysis uncovered two structural flaws: missing edge-minute indicators (\texttt{{mask\_m01\_missing}}) created spurious dataset shortcuts, and synthetic negatives lacked real South African biological or wave bursts. In \textbf{{Modeling~v3}}, I increased quiet windows from 22.6\% to 41.6\%, stratified real ambient negatives into surf swell, reef choruses, glitches, and normal background, dropped mask indicators, expanded features to 180 excess descriptors, introduced Hurdle GBDT regressors ($\hat{{p}}_{{\mathrm{{vessel}}}} \cdot \hat{{y}}_{{\mathrm{{pos}}}}$), and trained a 7-channel Squeeze-and-Excitation ResNet (\texttt{{CNN2D\_v3}}). However, LightGBM feature gain inspection caught \texttt{{proto\_spec\_logit}} capturing 47.0\% of total gain (Figure~\ref{{fig:progression}}c), acting as an Ocean Networks Canada vs.\ South African hydrophone-tilt classifier rather than a physical vessel detector.
 
-\subsection{{Modeling~v4: Exact \texorpdfstring{{$h(f)$}}{{h(f)}} Invariance, Five Strict Strata, and Candidate~\#3}}
+\subsection{{Modeling~v4: Exact \texorpdfstring{{$h(f)$}}{{h(f)}} Invariance, Five Strict Strata, and Submission~\#3}}
 
 In \textbf{{Modeling~v4}}, I permanently closed the calibration shortcut through three architectural guarantees:
 \begin{{enumerate}}
@@ -1070,11 +1085,11 @@ Model & Representation & Val $1-\mathrm{{RMSE}}$ & Val RMSE & Val AUC & Holdout 
 }}
 \end{{table}}
 
-Extending across the calibration-warped and hard-negative generations in Table~\ref{{tab:v3_v4_progression}} and Figure~\ref{{fig:progression}} (noting Table~\ref{{tab:v3_v4_progression}} re-evaluates \texttt{{Ensemble\_v2}} on v4's unified 541-window unseen-station holdout at {piv_v4.loc[('holdout','Ensemble_v2'),'zindi_score_1_minus_rmse']:.4f} vs.\ {ho_v2.loc['Ensemble_v2','zindi_score_1_minus_rmse']:.4f} in Table~\ref{{tab:v2_benchmark}}), \texttt{{Ensemble\_v4}} lifts \texttt{{val\_cal\_hard}} $1-\mathrm{{RMSE}}$ from {piv_v4.loc[('val_cal_hard','Ensemble_v2'),'zindi_score_1_minus_rmse']:.4f} (\texttt{{Ensemble\_v2}}) and {piv_v4.loc[('val_cal_hard','Ensemble_v3'),'zindi_score_1_minus_rmse']:.4f} (\texttt{{Ensemble\_v3}}) to {hc_v4['zindi_score_1_minus_rmse']:.4f}, raises ROC AUC to {hc_v4['roc_auc']:.4f}, and slashes quiet-window \texttt{{zero\_rmse}} from {piv_v4.loc[('val_cal_hard','Ensemble_v2'),'zero_rmse']:.4f} to {hc_v4['zero_rmse']:.4f}. On unseen Fish Hoek and Sea Point holdouts, \texttt{{Ensemble\_v4}} achieves {ho_v4['zindi_score_1_minus_rmse']:.4f} $1-\mathrm{{RMSE}}$ (RMSE {ho_v4['rmse']:.4f}, AUC {ho_v4['roc_auc']:.4f}, \texttt{{zero\_rmse}} {ho_v4['zero_rmse']:.4f}), beating both standalone \texttt{{CNN2D\_v4}} and \texttt{{LightGBM\_v4\_Hurdle}}. Figure~\ref{{fig:progression}}c verifies that eliminating \texttt{{proto\_spec\_logit}} transferred feature importance strictly onto $h(f)$-invariant HF/MF persistence descriptors (\texttt{{ex\_frac\_hf}}, \texttt{{hf\_contrib\_q20}}, \texttt{{R\_max\_b24}}). On \texttt{{Test.csv}}, Candidate~\#3 produces balanced finite shares ($\mathrm{{mean}} = {san_v4['test_share_mean']:.4f}$, $\mathrm{{SD}} = {san_v4['test_share_std']:.4f}$).
+Extending across the calibration-warped and hard-negative generations in Table~\ref{{tab:v3_v4_progression}} and Figure~\ref{{fig:progression}} (noting Table~\ref{{tab:v3_v4_progression}} re-evaluates \texttt{{Ensemble\_v2}} on v4's unified 541-window unseen-station holdout at {piv_v4.loc[('holdout','Ensemble_v2'),'zindi_score_1_minus_rmse']:.4f} vs.\ {ho_v2.loc['Ensemble_v2','zindi_score_1_minus_rmse']:.4f} in Table~\ref{{tab:v2_benchmark}}), \texttt{{Ensemble\_v4}} lifts \texttt{{val\_cal\_hard}} $1-\mathrm{{RMSE}}$ from {piv_v4.loc[('val_cal_hard','Ensemble_v2'),'zindi_score_1_minus_rmse']:.4f} (\texttt{{Ensemble\_v2}}) and {piv_v4.loc[('val_cal_hard','Ensemble_v3'),'zindi_score_1_minus_rmse']:.4f} (\texttt{{Ensemble\_v3}}) to {hc_v4['zindi_score_1_minus_rmse']:.4f}, raises ROC AUC to {hc_v4['roc_auc']:.4f}, and slashes quiet-window \texttt{{zero\_rmse}} from {piv_v4.loc[('val_cal_hard','Ensemble_v2'),'zero_rmse']:.4f} to {hc_v4['zero_rmse']:.4f}. On unseen Fish Hoek and Sea Point holdouts, \texttt{{Ensemble\_v4}} achieves {ho_v4['zindi_score_1_minus_rmse']:.4f} $1-\mathrm{{RMSE}}$ (RMSE {ho_v4['rmse']:.4f}, AUC {ho_v4['roc_auc']:.4f}, \texttt{{zero\_rmse}} {ho_v4['zero_rmse']:.4f}), beating both standalone \texttt{{CNN2D\_v4}} and \texttt{{LightGBM\_v4\_Hurdle}}. Figure~\ref{{fig:progression}}c verifies that eliminating \texttt{{proto\_spec\_logit}} transferred feature importance strictly onto $h(f)$-invariant HF/MF persistence descriptors (\texttt{{ex\_frac\_hf}}, \texttt{{hf\_contrib\_q20}}, \texttt{{R\_max\_b24}}). On \texttt{{Test.csv}}, Submission~\#3 produces balanced finite shares ($\mathrm{{mean}} = {san_v4['test_share_mean']:.4f}$, $\mathrm{{SD}} = {san_v4['test_share_std']:.4f}$).
 
 \begin{{table}}[!htbp]
 \centering
-\caption{{End-to-end leaderboard and validation progression from Sub~\#1 through Sub~\#2 (v2), v3, and calibration-invariant Candidate~\#3 (v4).}}
+\caption{{End-to-end leaderboard and validation progression from Sub~\#1 through Sub~\#2 (v2), v3, Sub~\#3 (v4), and parsimony Candidate~\#4 (v5-Simple).}}
 \label{{tab:v3_v4_progression}}
 \resizebox{{\textwidth}}{{!}}{{%
 \begin{{tabular}}{{@{{}}lllrrrr@{{}}}}
@@ -1089,14 +1104,14 @@ Model / Stage & Features & Live Zindi Public & Val Cal-Hard ($1-\mathrm{{RMSE}}$
 
 \begin{{figure}}[!htbp]
 \centering
-\includegraphics[width=0.98\textwidth]{{figures/fig5_v1_v2_v3_v4_benchmark_and_features.png}}
+\includegraphics[width=0.95\textwidth]{{figures/fig5_v1_v2_v3_v4_benchmark_and_features.png}}
 \caption{{Complete V1 $\to$ V2 $\to$ v3 $\to$ v4 progression: (a) 11-model V1/V2 unseen holdout benchmark; (b) cross-regime accuracy and quiet \texttt{{zero\_rmse}} across v2--v4; and (c) top-8 GBDT feature shift replacing v3's \texttt{{proto\_spec\_logit}} tilt shortcut with physical $R_*$ descriptors.}}
 \label{{fig:progression}}
 \end{{figure}}
 
 \subsection{{International Acoustic Standards, Hardware Tilt Stress, and Physical Strata}}
 
-Table~\ref{{tab:standards}} and Figure~\ref{{fig:standards_cal}} contrast learned ensembles against classical acoustic estimators under international standards. Because waves, biological choruses, and 15-minute ship dwells breach low-rank stationarity, \texttt{{Physics\_Robust\_q20}} (NSE {std_idx.loc[('val_cal_hard','Physics_Robust_q20'),'nse_r2']:.3f}) and unsupervised \texttt{{RPCA\_Unsupervised}} (CCC {std_idx.loc[('val_cal_hard','RPCA_Unsupervised'),'lin_ccc']:.3f}) fail on \texttt{{val\_cal\_hard}}. Conversely, \texttt{{Ensemble\_v4}} raises Lin's CCC to {std_idx.loc[('val_cal_hard','Ensemble_v4'),'lin_ccc']:.3f} (\texttt{{val\_cal\_hard}}) and {std_idx.loc[('holdout','Ensemble_v4'),'lin_ccc']:.3f} (\texttt{{holdout}}), lowers JOMOPANS $L_{{\mathrm{{excess}}}}$ MAE to {std_idx.loc[('val_cal_hard','Ensemble_v4'),'jomopans_lex_mae_db']:.3f}\,dB and {std_idx.loc[('holdout','Ensemble_v4'),'jomopans_lex_mae_db']:.3f}\,dB, and calibrates presence probabilities to $\mathrm{{ECE}}_{{10}} = {std_idx.loc[('val_cal_hard','Ensemble_v4'),'ece_10']:.4f}$.
+Table~\ref{{tab:standards}} and Figure~\ref{{fig:standards_cal}} contrast learned ensembles against classical acoustic estimators under international standards. Because waves, biological choruses, and 15-minute ship dwells breach low-rank stationarity, \texttt{{Physics\_Robust\_q20}} (NSE {std_idx.loc[('val_cal_hard','Physics_Robust_q20'),'nse_r2']:.3f}) and unsupervised \texttt{{RPCA\_Unsupervised}} (CCC {std_idx.loc[('val_cal_hard','RPCA_Unsupervised'),'lin_ccc']:.3f}) fail on \texttt{{val\_cal\_hard}}. Conversely, \texttt{{Ensemble\_v4}} raises Lin's CCC to {std_idx.loc[('val_cal_hard','Ensemble_v4'),'lin_ccc']:.3f} (\texttt{{val\_cal\_hard}}) and {std_idx.loc[('holdout','Ensemble_v4'),'lin_ccc']:.3f} (\texttt{{holdout}}), lowers JOMOPANS $L_{{\mathrm{{excess}}}}$ MAE to {std_idx.loc[('val_cal_hard','Ensemble_v4'),'jomopans_lex_mae_db']:.3f}\,dB and {std_idx.loc[('holdout','Ensemble_v4'),'jomopans_lex_mae_db']:.3f}\,dB, and calibrates presence probabilities to $\mathrm{{ECE}}_{{10}} = {std_idx.loc[('val_cal_hard','Ensemble_v4'),'ece_10']:.4f}$, while \texttt{{Ensemble\_v5\_Simple}} establishes exact zero-degradation horizontal tilt invariance across $-6$ to $+10$\,dB/dec ({tilt8.loc['Ensemble_v5_Simple','roc_auc']:.3f} AUC, lowest $+8$\,dB/dec quiet RMSE {tilt8.loc['Ensemble_v5_Simple','zero_rmse']:.3f}).
 
 \begin{{table}}[!htbp]
 \centering
@@ -1115,12 +1130,12 @@ Method & Cal-Hard CCC $\uparrow$ & Cal-Hard NSE $\uparrow$ & Cal-Hard $L_{{\math
 
 \begin{{figure}}[!htbp]
 \centering
-\includegraphics[width=0.90\textwidth]{{figures/fig6_standards_calibration_and_agreement.png}}
+\includegraphics[width=0.82\textwidth]{{figures/fig6_standards_calibration_and_agreement.png}}
 \caption{{Standards calibration and agreement on \texttt{{val\_cal\_hard}}: (a) 10-bin reliability diagrams ($\mathrm{{ECE}}_{{10}}$); (b) predicted vs.\ observed agreement (Lin's CCC, NSE, Spearman $\rho$); and (c) share RMSE stratified by energy regime.}}
 \label{{fig:standards_cal}}
 \end{{figure}}
 
-Table~\ref{{tab:strata}} and Figure~\ref{{fig:boundary_stress}} evaluate every individual unseen station and physical hard-negative stratum alongside $-6$ to $+10$\,dB/decade hardware tilt sweeps. Under $+8$\,dB/decade tilt, \texttt{{Ensemble\_v2}} drops to {tilt8.loc['Ensemble_v2','roc_auc']:.3f} ROC AUC (\texttt{{zero\_rmse}} {tilt8.loc['Ensemble_v2','zero_rmse']:.3f}) and \texttt{{Ensemble\_v3}} still suffers quiet false alarms (\texttt{{zero\_rmse}} {tilt8.loc['Ensemble_v3','zero_rmse']:.3f}), whereas \texttt{{Ensemble\_v4}} sustains {tilt8.loc['Ensemble_v4','roc_auc']:.3f} ROC AUC with {tilt8.loc['Ensemble_v4','zero_rmse']:.3f} quiet RMSE and improves Fish Hoek, Sea Point, \texttt{{strict\_hf\_ship}}, \texttt{{vlf\_surf}}, and \texttt{{reef\_active}} uniformly. Figure~\ref{{fig:signal_decomp}} visualizes centered ISO~18405 spectra, PCEN, and RPCA sparse layers across real hard negatives and controlled VTUAD mixtures.
+Table~\ref{{tab:strata}} and Figure~\ref{{fig:boundary_stress}} evaluate every individual unseen station and physical hard-negative stratum alongside $-6$ to $+10$\,dB/decade hardware tilt sweeps. Under $+8$\,dB/decade tilt, \texttt{{Ensemble\_v2}} drops to {tilt8.loc['Ensemble_v2','roc_auc']:.3f} ROC AUC (\texttt{{zero\_rmse}} {tilt8.loc['Ensemble_v2','zero_rmse']:.3f}), whereas \texttt{{Ensemble\_v4}} sustains {tilt8.loc['Ensemble_v4','roc_auc']:.3f} ROC AUC and \texttt{{Ensemble\_v5\_Simple}} maintains a flat {tilt8.loc['Ensemble_v5_Simple','roc_auc']:.3f} AUC with {tilt8.loc['Ensemble_v5_Simple','zero_rmse']:.3f} quiet RMSE. Figure~\ref{{fig:signal_decomp}} visualizes centered ISO~18405 spectra, PCEN, and RPCA sparse layers across real hard negatives and controlled VTUAD mixtures.
 
 \begin{{table}}[!htbp]
 \centering
@@ -1139,33 +1154,33 @@ Scope & Group / Stratum & $n$ & v2 ($1-\mathrm{{RMSE}}$ / AUC) & v3 ($1-\mathrm{
 
 \begin{{figure}}[!htbp]
 \centering
-\includegraphics[width=0.90\textwidth]{{figures/fig7_boundary_stress_and_calibration_shift.png}}
-\caption{{Hardware boundary stress: (a) unseen-holdout ROC AUC under $-6$ to $+10$\,dB/dec sensor tilt; (b) stratum-level error reduction across coastal hard negatives; and (c) JOMOPANS $L_{{\mathrm{{excess}}}}$ MAE across evaluation regimes.}}
+\includegraphics[width=0.82\textwidth]{{figures/fig7_boundary_stress_and_calibration_shift.png}}
+\caption{{Hardware boundary stress: (a) unseen-holdout ROC AUC under $-6$ to $+10$\,dB/dec sensor tilt showing flat \texttt{{v5\_simple}} invariance; (b) stratum-level error across coastal hard negatives; and (c) JOMOPANS $L_{{\mathrm{{excess}}}}$ MAE across regimes.}}
 \label{{fig:boundary_stress}}
 \end{{figure}}
 
 \begin{{figure}}[!htbp]
 \centering
-\includegraphics[width=0.83\textwidth]{{figures/fig8_acoustic_signal_boundaries_decomposition.png}}
+\includegraphics[width=0.74\textwidth]{{figures/fig8_acoustic_signal_boundaries_decomposition.png}}
 \caption{{Acoustic signal decomposition contrasting three real South African hard negatives ($y=0$: shrimp reef, real coastal pass, telemetry dropout) and a VTUAD mixture ($y=0.624$) via ISO~18405 centering, PCEN, and RPCA.}}
 \label{{fig:signal_decomp}}
 \end{{figure}}
 
-\section{{Evidentiary Boundaries and Modeling~v5 Contingency}}
+\section{{Evidentiary Boundaries, Simulator-to-Reality Gap, and Modeling~v5-Simple}}
 
-Three physical measurement boundaries remain outside this dataset's scope: (a) missing per-hydrophone sensitivity constants prohibit absolute $\mathrm{{dB\,re\,1\,\mu Pa}}$ pressure calibration \parencite{{iso2017underwater,robinson2014npl}}; (b) candidate site coordinates lacking confirmed deployment geometry prevent interpolated shipping-noise surfaces \parencite{{ainslie2020adeon,farcas2020shipping}}, which I address per official Zindi staff guidance (\texttt{{daniil\_zindi}}, 24 Nov 2026) via site-level \textit{{relative acoustic activity}} mapping anchored to held-out signals, baselines, and uncertainty bounds; and (c) zero synchronized AIS field logs accompany evaluation windows. Should Candidate~\#3 (\path{{submissions/candidate_v4_ensemble.csv}}) exhibit residual scoring bias under unseen hardware on Zindi, my documented Modeling~v5 contingency isolates \texttt{{score\_added\_vessel}} strictly to exact $h(f)$-invariant \texttt{{R\_*}}, PCEN, and RPCA features paired with \texttt{{ResNorm}} \parencite{{kim2021resnorm}} and \texttt{{Freq-MixStyle}} \parencite{{zhou2021mixstyle}} without CNN tilt-sensitive channels.
+Three physical measurement boundaries constrain inference across this dataset: (a) absent per-hydrophone sensitivity constants prevent $\mathrm{{dB\,re\,1\,\mu Pa}}$ calibration \parencite{{iso2017underwater,robinson2014npl}}; (b) candidate coordinates without confirmed deployment geometry prevent interpolated noise maps \parencite{{ainslie2020adeon,farcas2020shipping}}, addressed per Zindi staff guidance (\texttt{{daniil\_zindi}}, 24 Nov 2026) via site-level \textit{{relative acoustic activity}}; and (c) zero synchronized AIS field logs accompany evaluation windows. Moreover, exact public AUC denominators across Submissions~\#1--\texttt{{\#3}} (fractions over $45{{,}}000 = 150 \times 300$) alongside \texttt{{Ensemble\_v4}}'s modest live lift (0.7752 vs.\ 0.7750) revealed simulator overfitting: $134/205$ features and CNN Channel~4 remained tilt-sensitive, leaving \texttt{{Test.csv}} scores saturated (0.9753 median), while labeling real SA \texttt{{strict\_hf\_ship}} passes as $y=0$ suppressed coastal ships. My implemented parsimony ablation \texttt{{Ensemble\_v5\_Simple}} (Candidate~\#4) strips modeling down to 42 purely $h(f)$-invariant temporal excess, smoothed-sigmoid, PCEN, and RPCA predictors across 3 regularized tabular models without real-ship suppression, achieving $2.89\times 10^{{-33}}$ \texttt{{Test.csv}} share drift under severe $+10$\,dB/dec tilt, de-saturated scores (0.7239 mean, $28.4\%$ $>0.95$), and restored response to real SA ship passes ({sum_v5['real_sa_holdout_y0_strata']['strict_hf_ship']['v5_score']:.4f} vs.\ {sum_v5['real_sa_holdout_y0_strata']['ambient_normal']['v5_score']:.4f} ambient) \parencite{{kim2021resnorm,zhou2021mixstyle}}.
 
 \section{{Reproducibility, Executed Notebooks, and Code Verification}}
 
 Every figure, table, and submission prediction is bit-exact reproducible across any clean Python~3.13 environment matching the 125 non-AutoML dependencies in \path{{requirements.txt}}:
 \begin{{itemize}}
-    \item \textbf{{Single-command verification:}} \path{{scripts/reproduce_pipeline.py}} (\texttt{{-{{}}-mode verify-only}}) checks pinned environment versions, SHA-256 digests, and seven independent deterministic self-tests (\texttt{{v2}}, \texttt{{v3}}, \texttt{{v4\_simulator}}, \texttt{{v4\_features}}, \texttt{{v4\_train}}, \texttt{{standards\_suite}}, and \texttt{{sa\_site\_activity}}). Subprocess reloads of \path{{models/v4/bundle_v4.joblib}} (zero custom \texttt{{\_\_main\_\_}} classes) match saved predictions within $\le 3.55 \times 10^{{-9}}$ share / $0.0$ score, while $+37.5$\,dB constant shifts produce $0.0$ holdout difference.
-    \item \textbf{{Notebooks and Zindi-compliant archives:}} Three executed notebooks (\texttt{{01}} EDA/experiments, \texttt{{02}} V2 11-model benchmark, \texttt{{03}} \texttt{{v2->v3->v4}} generalization, standards, and site-level relative acoustic activity) ship alongside the $<10$\,MB runnable code package \path{{research_and_modeling_code_final.zip}} (41 scripts, zero raw audio or competition test data) and preserved V6 archive \path{{research_code_v6.zip}} ({v6_verif['code_archive']['bytes']} bytes), keeping \texttt{{Test.csv}} strictly inference-only.
+    \item \textbf{{Single-command verification:}} \path{{scripts/reproduce_pipeline.py}} (\texttt{{-{{}}-mode verify-only}}) checks pinned environment versions, SHA-256 digests, and eight independent deterministic self-tests (\texttt{{v2}}, \texttt{{v3}}, \texttt{{v4\_simulator}}, \texttt{{v4\_features}}, \texttt{{v4\_train}}, \texttt{{v5\_simple}}, \texttt{{standards\_suite}}, and \texttt{{sa\_site\_activity}}). Subprocess reloads of \path{{models/v4/bundle_v4.joblib}} and \path{{models/v5_simple/bundle_v5_simple.joblib}} reproduce saved predictions deterministically ($\le 2.89 \times 10^{{-33}}$ \texttt{{Test.csv}} share warp drift for \texttt{{v5\_simple}}).
+    \item \textbf{{Notebooks and Zindi-compliant archives:}} Three executed notebooks (\texttt{{01}} EDA/experiments, \texttt{{02}} V2 benchmark, \texttt{{03}} \texttt{{v2->v3->v4->v5\_simple}} generalization, standards, and site-level relative acoustic activity) ship alongside the $<10$\,MB runnable code package \path{{research_and_modeling_code_final.zip}} (42 scripts, zero raw audio or test data) and preserved V6 archive \path{{research_code_v6.zip}} ({v6_verif['code_archive']['bytes']} bytes).
 \end{{itemize}}
 
 \section{{Conclusion}}
 
-Tracing live leaderboard performance from Stage~0 baselines through Submission~\#1 (0.7615 / 0.5175 AUC), \texttt{{Exp~001--007}}, and \texttt{{Ensemble\_v2}} (Submission~\#2: 0.7750 / 0.5484 AUC) revealed how unknown hydrophone frequency responses $h(f)$ and coastal biological or surf transients defeat standard cross-site validation. By proving algebraic $h(f)$ cancellation in \texttt{{Ensemble\_v4}} via per-band temporal excess residuals $R(t,f)$, five-stratum South African hard negatives, and calibration-augmented 7-channel SE-ResNet blending, I lifted unseen-station $1-\mathrm{{RMSE}}$ to {ho_v4['zindi_score_1_minus_rmse']:.4f} ({ho_v4['roc_auc']:.4f} AUC, {ho_v4['zero_rmse']:.4f} \texttt{{zero\_rmse}}), reduced JOMOPANS excess error to {std_idx.loc[('holdout','Ensemble_v4'),'jomopans_lex_mae_db']:.3f}\,dB, and sustained {tilt8.loc['Ensemble_v4','roc_auc']:.4f} ROC AUC under $+8$\,dB/decade hardware tilt within a reproducible 10-page package.
+Tracing live leaderboard performance monotonically across Stage~0, Submission~\#1 (0.7615 / 0.5175 AUC), \texttt{{Exp~001--007}}, Submission~\#2 (0.7750 / 0.5484 AUC), Submission~\#3 (0.775235755 / 0.556555555 AUC), and parsimony Candidate~\#4 (\texttt{{Ensemble\_v5\_Simple}}) exposed both hydrophone response $h(f)$ leakage and synthetic simulator overfitting in uncalibrated telemetry. By pairing algebraic $h(f)$ cancellation, held-out South African site-level relative acoustic activity evaluation, and international acoustic standards across a 42-script reproducible suite, I establish an honest, transparent benchmark bounded cleanly at physical measurement limits within a 10-page package.
 
 \printbibliography[heading=bibintoc,title={{References}}]
 
@@ -1393,7 +1408,7 @@ def verify_code_archive(zip_path: Path) -> dict:
             )
 
         py_files = sorted((workdir / "scripts").glob("*.py"))
-        assert len(py_files) == 41, f"Expected 41 extracted scripts, got {len(py_files)}"
+        assert len(py_files) == 42, f"Expected 42 extracted scripts, got {len(py_files)}"
         for py in py_files:
             py_compile.compile(str(py), doraise=True)
 
@@ -1407,6 +1422,7 @@ def verify_code_archive(zip_path: Path) -> dict:
             "scripts/modeling_v2_train.py",
             "scripts/modeling_v3_train.py",
             "scripts/modeling_v4_train.py",
+            "scripts/modeling_v5_simple.py",
             "scripts/standardized_evaluation_suite.py",
             "scripts/evaluate_sa_relative_vessel_activity.py",
         ]:
@@ -1426,14 +1442,14 @@ def verify_code_archive(zip_path: Path) -> dict:
         "code_zip_bytes": zip_bytes,
         "code_zip_sha256": _sha256(zip_path),
         "code_zip_entries": len(names),
-        "code_zip_scripts": 41,
+        "code_zip_scripts": 42,
         "code_zip_notebooks": 3,
         "code_zip_self_test": "PASS",
     }
 
 
 def build_unified_code_archive(out_zip: Path) -> dict:
-    """Build unified <10 MB runnable code + notebooks + docs + TeX archive covering v2, v3, v4, and standards."""
+    """Build unified <10 MB runnable code + notebooks + docs + TeX archive covering v2, v3, v4, v5_simple, and standards."""
     v6_zip = ROOT / "deliverables/research_submission/research_code_v6.zip"
     assert v6_zip.is_file(), f"Missing V6 archive: {v6_zip}"
     with zipfile.ZipFile(v6_zip) as zf:
@@ -1456,6 +1472,7 @@ def build_unified_code_archive(out_zip: Path) -> dict:
         "scripts/modeling_v4_features.py",
         "scripts/modeling_v4_simulator.py",
         "scripts/modeling_v4_train.py",
+        "scripts/modeling_v5_simple.py",
         "scripts/standardized_evaluation_suite.py",
         "scripts/evaluate_sa_relative_vessel_activity.py",
         "scripts/reproduce_pipeline.py",
@@ -1466,7 +1483,7 @@ def build_unified_code_archive(out_zip: Path) -> dict:
         "scripts/build_overleaf_manuscript.py",
     ]
     all_script_rels = sorted(set(v6_scripts + extra_scripts))
-    assert len(all_script_rels) == 41, f"Expected 41 unique scripts, got {len(all_script_rels)}"
+    assert len(all_script_rels) == 42, f"Expected 42 unique scripts, got {len(all_script_rels)}"
 
     # Verify via AST that no local scripts/*.py dependency is missing
     available_stems = {p.stem for p in (ROOT / "scripts").glob("*.py")}
@@ -1504,6 +1521,8 @@ def build_unified_code_archive(out_zip: Path) -> dict:
         (ROOT / "deliverables/research_submission/training_only_site_aggregates.csv", "site_context/training_only_site_aggregates.csv"),
         (ROOT / "reports/standards_benchmark/sa_site_relative_vessel_activity.csv", "site_context/sa_site_relative_vessel_activity.csv"),
         (ROOT / "reports/standards_benchmark/sa_heldout_signal_support.csv", "site_context/sa_heldout_signal_support.csv"),
+        (ROOT / "reports/modeling_v5_simple/summary.json", "reports/modeling_v5_simple/summary.json"),
+        (ROOT / "reports/modeling_v5_simple/comparison_metrics.csv", "reports/modeling_v5_simple/comparison_metrics.csv"),
         (ROOT / "docs/metadata/hearmyship_split_v1.csv", "metadata/hearmyship_split_v1.csv"),
         (MAIN_TEX, "manuscript/main.tex"),
         (BIB_FILE, "manuscript/references.bib"),

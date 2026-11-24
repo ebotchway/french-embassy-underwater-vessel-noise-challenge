@@ -23,7 +23,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = ROOT / "reports/reproducibility_manifest.json"
-SUPPORTED_VERSIONS = ("v2", "v3", "v4")
+SUPPORTED_VERSIONS = ("v2", "v3", "v4", "v5_simple")
 
 SELF_TEST_CMDS = [
     ("v2_train", ["scripts/modeling_v2_train.py", "--self-test-only"]),
@@ -31,6 +31,7 @@ SELF_TEST_CMDS = [
     ("v4_simulator", ["scripts/modeling_v4_simulator.py", "--self-test-only"]),
     ("v4_features", ["scripts/modeling_v4_features.py", "--self-test-only"]),
     ("v4_train", ["scripts/modeling_v4_train.py", "--self-test-only"]),
+    ("v5_simple", ["scripts/modeling_v5_simple.py", "--self-test-only"]),
     ("standards_suite", ["scripts/standardized_evaluation_suite.py", "--self-test-only"]),
     ("sa_site_activity", ["scripts/evaluate_sa_relative_vessel_activity.py", "--self-test-only"]),
 ]
@@ -44,6 +45,9 @@ TRACKED_ARTIFACTS = [
     "submissions/candidate_v2_ensemble.csv",
     "submissions/candidate_v3_ensemble.csv",
     "submissions/candidate_v4_ensemble.csv",
+    "submissions/candidate_v5_simple.csv",
+    "reports/modeling_v5_simple/summary.json",
+    "reports/modeling_v5_simple/comparison_metrics.csv",
     "reports/standards_benchmark/standardized_metrics_full.csv",
     "reports/standards_benchmark/sa_site_relative_vessel_activity.csv",
     "reports/standards_benchmark/sa_heldout_signal_support.csv",
@@ -120,6 +124,7 @@ def _check_submissions() -> list[dict]:
         ("v2", "submissions/candidate_v2_ensemble.csv"),
         ("v3", "submissions/candidate_v3_ensemble.csv"),
         ("v4", "submissions/candidate_v4_ensemble.csv"),
+        ("v5_simple", "submissions/candidate_v5_simple.csv"),
     ]:
         p = ROOT / rel
         assert p.is_file(), f"Missing submission candidate: {p}"
@@ -196,6 +201,9 @@ def run_export_only(version: str) -> None:
         _run_py(["scripts/modeling_v4_train.py", "--export-only"], "export-only:v4")
         post_sha = _sha256(ROOT / "submissions/candidate_v4_ensemble.csv")
         assert pre_sha == post_sha, f"v4 export-only altered CSV hash: {pre_sha} vs {post_sha}"
+    if "v5_simple" in targets:
+        assert (ROOT / "submissions/candidate_v5_simple.csv").exists(), "Missing submissions/candidate_v5_simple.csv"
+        _run_py(["scripts/modeling_v5_simple.py", "--self-test-only"], "export-only:v5_simple_self_test")
     _run_py(["scripts/standardized_evaluation_suite.py"], "export-only:standards_suite")
     _check_submissions()
 
@@ -211,7 +219,9 @@ def run_full(version: str) -> None:
     if "v4" in targets:
         _run_py(["scripts/modeling_v4_simulator.py"], "full:v4_simulator")
         _run_py(["scripts/modeling_v4_train.py"], "full:v4_train")
-    if "v4" in targets or "v3" in targets or "v2" in targets:
+    if "v5_simple" in targets:
+        _run_py(["scripts/modeling_v5_simple.py"], "full:v5_simple")
+    if any(v in targets for v in ("v2", "v3", "v4", "v5_simple")):
         _run_py(["scripts/standardized_evaluation_suite.py"], "full:standards_suite")
         _run_py(["scripts/build_modeling_notebook_03.py"], "full:build_nb03")
         _run_py(["scripts/build_overleaf_manuscript.py"], "full:overleaf_assets")
@@ -220,7 +230,7 @@ def run_full(version: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["verify-only", "export-only", "full"], default="verify-only")
-    parser.add_argument("--version", choices=["v2", "v3", "v4", "all"], default="all")
+    parser.add_argument("--version", choices=["v2", "v3", "v4", "v5_simple", "all"], default="all")
     parser.add_argument("--write-manifest", action="store_true", help="Write/update reports/reproducibility_manifest.json.")
     args = parser.parse_args()
 

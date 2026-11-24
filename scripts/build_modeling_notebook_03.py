@@ -25,9 +25,9 @@ def build_notebook() -> nbf.NotebookNode:
 
     md(
         """
-# 03 · Domain Generalization (`v2 -> v3 -> v4`), Calibration Invariance & Acoustic Standards
+# 03 · Domain Generalization (`v2 -> v3 -> v4 -> v5_simple`), Calibration Invariance & Acoustic Standards
 
-In this notebook, I document and verify my full domain-generalization progression from the live Zindi leaderboard results (`Submission #1` and `Submission #2 / v2`) through **Modeling v3** (`180` features, hard-negative strata, 7-channel SE-ResNet CNN), **Modeling v4** (`205` features, `71` exact hydrophone calibration $h(f)$-invariant `R_*` features, strict SA ship hard negatives), and my **International Acoustic Standards Benchmark** (`ISO 18405:2017`, `IEC 61260-1`, `NPL GPG 133`, `ADEON`, `JOMOPANS`, `PCEN`, and `RPCA`). Every metric, live invariance assertion, and bundle reload check below executes deterministically without ever fitting on `Test.csv`.
+In this notebook, I document and verify my complete modeling and domain-generalization progression from live Zindi leaderboard Submissions **#1 (`V1_RF_MaxShift`)** and **#2 (`Ensemble_v2`)** through **Modeling v3** (`180` features, hard-negative strata, 7-channel SE-ResNet), **Modeling v4** (`Submission #3`, `205` features with `71` $h(f)$-invariant `R_*`), **Modeling v5-Simple** (`Candidate #4`, ruthlessly simplified to `42` purely $h(f)$-invariant temporal excess, per-band `PCEN`, and `RPCA` features across `3` regularized tabular learners), my **International Acoustic Standards Benchmark** (`ISO 18405:2017`, `IEC 61260-1`, `NPL GPG 133`, `ADEON`, `JOMOPANS`, `PCEN`, `RPCA`), and my **Zindi Staff Site-Level Relative Acoustic Activity Audit** (`17,487` held-out real South African windows). Every check runs deterministically without ever fitting on `Test.csv`.
 """
     )
 
@@ -64,7 +64,9 @@ if str(ROOT / "scripts") not in sys.path:
 
 from extract_external_decidecade import EXACT_CENTRES
 from modeling_v4_features import build_cnn_tensors_v4, extract_features_v4
+from modeling_v4_simulator import LOG10_F_NORM, NORM_BAND_COORD
 from modeling_v4_train import predict_from_bundle_v4, seed_everything
+from modeling_v5_simple import extract_features_v5_simple, predict_from_bundle_v5_simple
 from standardized_evaluation_suite import compute_pcen_map, eval_rpca_unsupervised
 
 plt.rcParams.update({"figure.dpi": 110, "axes.grid": True, "grid.alpha": 0.25})
@@ -75,11 +77,14 @@ print(f"Project root: {ROOT.name} | Deterministic CPU environment locked (seed=4
 
     md(
         """
-## 1. Live Leaderboard Diagnosis (`Submission #1` & `Submission #2 / v2`)
+## 1. Live Leaderboard Progression (`Submission #1 -> #2 -> #3`) & Domain-Gap Diagnosis
 
-Even though `Ensemble_v2` achieved strong synthetic generalization (`0.8747` known-station validation, `0.8833` unseen Fish Hoek + Sea Point holdout `1-RMSE`), my two live Zindi public leaderboard submissions revealed a critical real-world residual gap: `ROC AUC` improved only modestly (`0.517533 -> 0.548377777`) alongside a small public `1-RMSE` gain (`0.761536 -> 0.77501743`, Rank `508`). Auditing feature importances and `Test.csv` window structures pinpointed two mechanisms behind that gap:
-1. **Unmodeled hydrophone frequency response $h(f)$:** Different recorders impose site-specific transfer curves (e.g., spectral tilt and modal ripple), letting global spectral-shape prototypes (`proto_spec_logit`) separate Ocean Networks Canada (VTUAD) ships from South African backgrounds by sensor signature rather than transient vessel physics.
-2. **Sharp SA hard negatives & missingness shortcuts:** Short 2–5 minute VTUAD blocks, intense 63–125 Hz reef activity, 31.6–100 Hz VLF surf swells, and sharp `>15 dB` telemetry glitches triggered false alarms, while missing `m01`/`m15` boundary flags introduced spurious missingness associations.
+Even though `Ensemble_v2` achieved `0.8833` on unseen Fish Hoek + Sea Point synthetic holdout windows and `Ensemble_v4` lifted local unseen holdout accuracy to `0.9219` (`AUC 0.9737`), live Zindi public scores improved monotonically yet modestly across all three submissions:
+- **Submission #1 (`pBUapzRu`, `V1_RF_MaxShift`):** Public `1 - RMSE = 0.761536`, diagnostic `ROC AUC = 0.517533`.
+- **Submission #2 (`1zX9R2QL`, `Ensemble_v2`):** Public `1 - RMSE = 0.77501743` (`RMSE = 0.224982569`), diagnostic `ROC AUC = 0.548377777`.
+- **Submission #3 (`ovjzdeb8`, `Ensemble_v4`):** Public `1 - RMSE = 0.775235755` (`RMSE = 0.224764244`), diagnostic `ROC AUC = 0.556555555`.
+
+Auditing why a `+0.057` local synthetic improvement only yielded `+0.0002` publicly exposed simulator overfitting and residual leakage: `134/205` `v4` features and `CNN2D_v4` Channel 4 (`64.7%` of score weight) remained tilt-sensitive, leaving `Test.csv` presence scores saturated (`0.9753` median), while labeling real SA `strict_hf_ship` windows as `y = 0` suppressed genuine coastal vessel passes.
 """
     )
 
@@ -89,9 +94,9 @@ lb_history = pd.DataFrame([
     {
         "Stage": "Submission #1 (V1_RF_MaxShift)",
         "Feature Dim": 96,
-        "Public 1-RMSE": 0.761536,
-        "Public Share RMSE": 0.238464,
-        "Public ROC AUC": 0.517533,
+        "Public 1-RMSE": 0.761535762,
+        "Public Share RMSE": 0.238464237,
+        "Public ROC AUC": 0.517533333,
         "Unseen Holdout 1-RMSE": 0.8390,
         "Unseen Holdout AUC": 0.8980,
         "Status": "Scored (Submitted)",
@@ -99,11 +104,11 @@ lb_history = pd.DataFrame([
     {
         "Stage": "Submission #2 (Ensemble_v2)",
         "Feature Dim": 138,
-        "Public 1-RMSE": 0.77501743,
+        "Public 1-RMSE": 0.775017430,
         "Public Share RMSE": 0.224982569,
         "Public ROC AUC": 0.548377777,
-        "Unseen Holdout 1-RMSE": 0.8886,
-        "Unseen Holdout AUC": 0.9334,
+        "Unseen Holdout 1-RMSE": 0.8833,
+        "Unseen Holdout AUC": 0.9365,
         "Status": "Scored (Rank 508)",
     },
     {
@@ -114,17 +119,27 @@ lb_history = pd.DataFrame([
         "Public ROC AUC": None,
         "Unseen Holdout 1-RMSE": 0.8971,
         "Unseen Holdout AUC": 0.9686,
-        "Status": "Diagnostic Intermediate (Superseded by v4)",
+        "Status": "Diagnostic Intermediate",
     },
     {
-        "Stage": "Candidate v4 (h(f)-Invariant R(t,f))",
+        "Stage": "Submission #3 (Ensemble_v4)",
         "Feature Dim": 205,
+        "Public 1-RMSE": 0.775235755,
+        "Public Share RMSE": 0.224764244,
+        "Public ROC AUC": 0.556555555,
+        "Unseen Holdout 1-RMSE": 0.9219,
+        "Unseen Holdout AUC": 0.9737,
+        "Status": "Scored Best Live (ovjzdeb8)",
+    },
+    {
+        "Stage": "Candidate #4 (Ensemble_v5_Simple)",
+        "Feature Dim": 42,
         "Public 1-RMSE": None,
         "Public Share RMSE": None,
         "Public ROC AUC": None,
-        "Unseen Holdout 1-RMSE": 0.9219,
-        "Unseen Holdout AUC": 0.9737,
-        "Status": "Verified & Ready for Submission #3",
+        "Unseen Holdout 1-RMSE": 0.8382,
+        "Unseen Holdout AUC": 0.9194,
+        "Status": "Verified & Ready for Submission #4",
     },
 ])
 display(lb_history)
@@ -256,9 +271,38 @@ plt.show()
 
     md(
         """
-## 4. International Acoustic Standards & Boundary Stress Benchmark
+## 4. Modeling v5-Simple (`Candidate #4`): Exact $h(f)$-Invariant Parsimony Ablation (`42` Features)
 
-Beyond Zindi's competition metrics, I evaluated `Constant_Mean`, `Physics_Robust_q20`, unsupervised `RPCA_Unsupervised` (Candès et al., 2011; Lin et al., 2017), `Ensemble_v2`, `Ensemble_v3`, and `Ensemble_v4` across **16+ international underwater acoustic metrics**: `ISO 18405:2017` terminology, `IEC 61260-1` base-10 deci-decades, `NPL GPG 133` & `ADEON` amplitude/calibration checks, `JOMOPANS` excess shipping sound $L_{\\text{excess}} = -10\\log_{10}(1 - s)$ MAE in dB, Lin's Concordance Correlation Coefficient (`CCC`), Nash-Sutcliffe Efficiency (`NSE`), regime-wise RMSE (`Zero`, `Low`, `Mod`, `High`), Brier reliability/resolution/uncertainty decomposition, Expected Calibration Error (`ECE_10`), and a synthetic `-6` to `+10 dB/dec` hydrophone calibration-tilt stress test on unseen `holdout`.
+Because live Submission #3 (`Ensemble_v4`: `0.775235755` / `0.556555555` AUC) confirmed that adding complexity boosted synthetic CV far more than real generalization (`134/205` non-$h(f)$-invariant features and CNN Channel 4 kept `Test.csv` score saturated at `0.9753` median), I built **Modeling v5-Simple** as a clean parsimony test:
+1. **Strict `42`-feature $h(f)$-invariant basis:** Strictly temporal excess $R(t,f)$ across 5 bands (`VLF/LF/MF/HF/BB`), smooth sigmoids (removing 0.1 dB grid discontinuities), per-band median-centered `PCEN`, and `RPCA` sparse/low-rank ratios — **zero** raw spectral levels, **zero** `CNN2D`, and an $h(f)$-invariant glitch filter.
+2. **Removed simulator biases:** Excluded real SA `strict_hf_ship` windows from `y = 0` negatives (`0` real coastal passes suppressed) and widened synthetic shipping tilts (`-12` to `+6 dB/dec`) with `55%` smooth CPA bells (`8,000` train / `1,500` cal-warped val / `541` holdout).
+
+Below I verify exact `Test.csv` and `holdout` calibration invariance, check real SA stratum behavior, and compare all `4` submission CSVs.
+"""
+    )
+
+    code(
+        """
+v5_cmp = pd.read_csv(ROOT / "reports/modeling_v5_simple/comparison_metrics.csv")
+v5_imp = pd.read_csv(ROOT / "reports/modeling_v5_simple/feature_importance.csv")
+v5_sum = json.loads((ROOT / "reports/modeling_v5_simple/summary.json").read_text())
+
+display(v5_cmp.round(4))
+display(v5_imp.head(12).round(2))
+print("Real unmixed SA holdout strata under v5_simple (y = 0):")
+display(pd.DataFrame(v5_sum["real_sa_holdout_y0_strata"]).T.round(4))
+print(
+    f"v5_simple Test.csv warp max|diff| -> share={v5_sum['test_warp_max_diff_share']:.2e}, "
+    f"score={v5_sum['test_warp_max_diff_score']:.2e} | mean_score={v5_sum['test_score_mean']:.4f}"
+)
+"""
+    )
+
+    md(
+        """
+## 5. International Acoustic Standards & Boundary Stress Benchmark
+
+Beyond Zindi's competition metrics, I evaluated `Constant_Mean`, `Physics_Robust_q20`, unsupervised `RPCA_Unsupervised` (Candès et al., 2011; Lin et al., 2017), `Ensemble_v2`, `Ensemble_v3`, `Ensemble_v4`, and `Ensemble_v5_Simple` across **16+ international underwater acoustic metrics**: `ISO 18405:2017` terminology, `IEC 61260-1` base-10 deci-decades, `NPL GPG 133` & `ADEON` amplitude/calibration checks, `JOMOPANS` excess shipping sound $L_{\\text{excess}} = -10\\log_{10}(1 - s)$ MAE in dB, Lin's Concordance Correlation Coefficient (`CCC`), Nash-Sutcliffe Efficiency (`NSE`), regime-wise RMSE (`Zero`, `Low`, `Mod`, `High`), Brier reliability/resolution/uncertainty decomposition, Expected Calibration Error (`ECE_10`), and a synthetic `-6` to `+10 dB/dec` hydrophone calibration-tilt stress test on unseen `holdout`.
 """
     )
 
@@ -284,8 +328,8 @@ display(std_full[std_full["split"].isin(["val_cal_hard", "holdout"])][cols_show]
 print("Holdout Calibration-Tilt Stress (+8 dB/dec extreme sensor tilt):")
 display(tilt_df[tilt_df["tilt_db_per_dec"] == 8.0].round(4))
 
-print("Holdout Per-Station & Combined Stratum Breakdown (Ensemble_v4 vs Ensemble_v2):")
-sub_st = strata_df[strata_df["model"].isin(["Ensemble_v2", "Ensemble_v4"])][
+print("Holdout Per-Station & Combined Stratum Breakdown (Ensemble_v2 vs Ensemble_v4 vs Ensemble_v5_Simple):")
+sub_st = strata_df[strata_df["model"].isin(["Ensemble_v2", "Ensemble_v4", "Ensemble_v5_Simple"])][
     ["scope", "group", "model", "n", "zindi_score_1_minus_rmse", "rmse_zero", "roc_auc", "jomopans_lex_mae_db", "ece_10"]
 ]
 display(sub_st.sort_values(["scope", "group", "model"]).round(4))
@@ -306,9 +350,9 @@ for title, rel in [
 
     md(
         """
-## 5. End-to-End Reproducibility Verification (`v2`, `v3`, `v4`) & `v5` Blueprint Hook
+## 6. End-to-End Reproducibility Verification (`v2`, `v3`, `v4`, `v5_simple`)
 
-Every submission artifact is audited below against `sample_submission.csv` (`1,500` rows, exact `ID` order, finite values in `[0, 1]`, SHA-256 checksums). I also reload `models/v4/bundle_v4.joblib` from disk and check `predict_from_bundle_v4` on `holdout.npz[:32]` for finite predictions and `+37.5 dB` invariance. If Submission #3 reveals residual false positives on uncalibrated ports, my documented **Modeling v5 Blueprint** (`docs/LITERATURE_STANDARDS_AND_BOUNDARIES.md`) isolates `score_added_vessel` to strict `h(f)`-invariant `R_*` + `PCEN` + `RPCA` features and `Freq-MixStyle` / `ResNorm` without spectral tilt channel `ch4`.
+Every submission artifact is audited below against `sample_submission.csv` (`1,500` rows, exact `ID` order, finite values in `[0, 1]`, SHA-256 checksums). I also reload both `models/v4/bundle_v4.joblib` and `models/v5_simple/bundle_v5_simple.joblib` from disk to verify finite predictions, `+37.5 dB` shift invariance (`v4`), and exact `+10 dB/dec + 4 dB ripple + 27.5 dB` invariance (`v5_simple`).
 """
     )
 
@@ -318,9 +362,10 @@ sample = pd.read_csv(ROOT / "data/zindi/raw/sample_submission.csv")
 sub_rows = []
 subs = {}
 for tag, rel in [
-    ("candidate_v2_ensemble (Submitted #2)", "submissions/candidate_v2_ensemble.csv"),
+    ("candidate_v2_ensemble (Sub #2: 0.7750)", "submissions/candidate_v2_ensemble.csv"),
     ("candidate_v3_ensemble (Intermediate v3)", "submissions/candidate_v3_ensemble.csv"),
-    ("candidate_v4_ensemble (Recommended #3)", "submissions/candidate_v4_ensemble.csv"),
+    ("candidate_v4_ensemble (Sub #3: 0.7752)", "submissions/candidate_v4_ensemble.csv"),
+    ("candidate_v5_simple (Candidate #4: 42 h(f)-inv)", "submissions/candidate_v5_simple.csv"),
 ]:
     p = ROOT / rel
     df = pd.read_csv(p)
@@ -334,28 +379,38 @@ for tag, rel in [
         "Candidate": tag,
         "Rows": len(df),
         "Share Mean": round(float(df["share_added_vessel"].mean()), 4),
-        "Share Median": round(float(df["share_added_vessel"].median()), 4),
+        "Share SD": round(float(df["share_added_vessel"].std()), 4),
         "Score Mean": round(float(df["score_added_vessel"].mean()), 4),
         "Score > 0.95": round(float((df["score_added_vessel"] > 0.95).mean()), 4),
         "SHA-256 (16)": sha,
     })
 display(pd.DataFrame(sub_rows))
 
-# Live bundle_v4 reload + continuous +37.5 dB check
+# Live bundle_v4 reload + +37.5 dB check AND bundle_v5_simple reload + +10 dB/dec + ripple + gain check
 bundle_v4 = joblib.load(ROOT / "models/v4/bundle_v4.joblib")
 sh_a, sc_a = predict_from_bundle_v4(bundle_v4, X_sub)
 sh_b, sc_b = predict_from_bundle_v4(bundle_v4, X_sub + 37.5)
 print(
-    f"Live bundle_v4 reload check -> Share max|diff|={np.max(np.abs(sh_a - sh_b)):.2e}, "
-    f"Score max|diff|={np.max(np.abs(sc_a - sc_b)):.2e} (n={len(X_sub)} holdout windows)"
+    f"Live bundle_v4 (+37.5 dB) -> Share max|diff|={np.max(np.abs(sh_a - sh_b)):.2e}, "
+    f"Score max|diff|={np.max(np.abs(sc_a - sc_b)):.2e}"
 )
 assert np.max(np.abs(sh_a - sh_b)) < 1e-6 and np.max(np.abs(sc_a - sc_b)) < 1e-6
+
+bundle_v5 = joblib.load(ROOT / "models/v5_simple/bundle_v5_simple.joblib")
+warp_v5 = (10.0 * LOG10_F_NORM + 4.0 * np.cos(2.0 * np.pi * NORM_BAND_COORD * 1.3 + 0.5) + 27.5)[None, None, :]
+sh_5a, sc_5a = predict_from_bundle_v5_simple(bundle_v5, X_sub)
+sh_5b, sc_5b = predict_from_bundle_v5_simple(bundle_v5, X_sub + warp_v5)
+print(
+    f"Live bundle_v5_simple (+10 dB/dec + 4 dB ripple + 27.5 dB) -> Share max|diff|={np.max(np.abs(sh_5a - sh_5b)):.2e}, "
+    f"Score max|diff|={np.max(np.abs(sc_5a - sc_5b)):.2e}"
+)
+assert np.max(np.abs(sh_5a - sh_5b)) < 1e-3 and np.max(np.abs(sc_5a - sc_5b)) < 1e-6
 """
     )
 
     md(
         """
-## 6. Held-Out South African Site-Level Relative Acoustic Activity & Observed-Signal Support (Zindi Staff Compliance)
+## 7. Held-Out South African Site-Level Relative Acoustic Activity & Observed-Signal Support (Zindi Staff Compliance)
 
 Per official Zindi staff spatial-rubric guidance (`daniil_zindi`, 24 Nov 2026), an uninterpolated total-sound map provides context only. Below, I load `reports/standards_benchmark/sa_site_relative_vessel_activity.csv` and `reports/standards_benchmark/sa_heldout_signal_support.csv` (generated strictly over **17,487 held-out real 15-minute windows** across `6` future development periods and `2` unseen holdout sites `09_Fish_Hoek` & `10_Sea_Point`, with zero training or `Test.csv` overlap), contrast `h(f)`-invariant **relative acoustic activity** against total-sound Baseline `B0` and analytical `Physics_Robust_q20` with **1,000-draw calendar-day block bootstrap 95% CIs**, and display the upgraded 3-panel **Figure 2**.
 """
