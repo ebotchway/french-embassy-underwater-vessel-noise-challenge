@@ -1,17 +1,17 @@
 {
   "overleaf_dir": "deliverables/overleaf_manuscript",
   "zip_path": "deliverables/overleaf_manuscript/overleaf_research_manuscript.zip",
-  "zip_bytes": 2634557,
-  "zip_sha256": "dbbdd0db1742aa200708b9a32ef2f76c1ea2fcc90e4e01f17a8bc8a7bdccd806",
+  "zip_bytes": 2679317,
+  "zip_sha256": "838085a109e2a0dceb1a83b44be69322730b75df368df31d868ffafab6b7b9fe",
   "zip_entries": 11,
-  "main_tex_sha256": "78bf3252ffade6084147f8d340c170d324708fe2e79e66d42fc407724afa0076",
+  "main_tex_sha256": "1835a7efce7f77c7014034121eb124b4ab907bb22ea6e69f8b65e8266a11240c",
   "references_bib_sha256": "06688500e6a0e86fe9c83357c7e61e229d2d07e7d571aee862eeb5426cf0609d",
   "validation": {
     "figures_verified": 8,
     "labels_verified": 23,
     "citations_verified": 28,
     "bib_entries": 28,
-    "approx_body_words": 3913
+    "approx_body_words": 3968
   },
   "figures": {
     "fig1_sa_real_acoustics.png": {
@@ -45,16 +45,16 @@
       "sha256": "4f60843e115cd89d29e0204986ff84a4bd15429de8369db80a9c67056a062fca"
     },
     "fig6_standards_calibration_and_agreement.png": {
-      "bytes": 578736,
+      "bytes": 609218,
       "width": 4500,
       "height": 1380,
-      "sha256": "6e4ef14d0e3fbce0b144a6e1d4528bb10b2ae979dc2f43f03c5717b244a46a72"
+      "sha256": "b506a63d3c95f8354762c35249ef609db621402a862582545e0c7752d77ad9aa"
     },
     "fig7_boundary_stress_and_calibration_shift.png": {
-      "bytes": 294286,
+      "bytes": 308757,
       "width": 4620,
       "height": 1410,
-      "sha256": "d78e0df2ee0d8f4749dcbb7e3de86a70c9f5e7d40e6e764002097961bd86d6c8"
+      "sha256": "8a842078b6313c5b136f4bedb3833ed93cb522c22b8bcf85d3c713386d6a2b5d"
     },
     "fig8_acoustic_signal_boundaries_decomposition.png": {
       "bytes": 489815,
@@ -64,16 +64,16 @@
     }
   },
   "code_zip_path": "deliverables/overleaf_manuscript/research_and_modeling_code_final.zip",
-  "code_zip_bytes": 3700971,
-  "code_zip_sha256": "65122756e9c9098daa9bbe343adf2c1a3bf826889eafd4d19f3f4983ddae5117",
-  "code_zip_entries": 64,
-  "code_zip_scripts": 42,
+  "code_zip_bytes": 3756638,
+  "code_zip_sha256": "800fc398c422eb6abd6e1d00ef726652c7b8570db187238c8d915b0f40409542",
+  "code_zip_entries": 67,
+  "code_zip_scripts": 43,
   "code_zip_notebooks": 3,
   "code_zip_self_test": "PASS",
   "pdf_path": "deliverables/overleaf_manuscript/research_manuscript_latex.pdf",
   "pdf_pages": 10,
-  "pdf_bytes": 3247407,
-  "pdf_sha256": "ffb7eb72f9b0c461df9e7b4d74d3c923cc18c007b53923d8b3d26f7cf99cedf5",
+  "pdf_bytes": 3290317,
+  "pdf_sha256": "df6dc1979bb86afe15eb12a08039b9e25f35ada55a369254a67d547c992e5c28",
   "overfull_hbox_count": 0,
   "overfull_hbox_lines": []
 }

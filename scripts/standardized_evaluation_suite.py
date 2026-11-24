@@ -280,6 +280,7 @@ def _plot_fig1_calibration_and_agreement(
         ("Ensemble_v3", "#ff7f0e", "^", "Ensemble_v3"),
         ("Ensemble_v4", "#1f77b4", "o", "Ensemble_v4"),
         ("Ensemble_v5_Simple", "#009E73", "P", "v5_simple"),
+        ("Ensemble_v5_Blend", "#9467bd", "D", "v5_blend (50/50)"),
     ):
         ps = np.clip(preds_vh[m][1], 0.0, 1.0)
         bx, by = [], []
@@ -289,13 +290,13 @@ def _plot_fig1_calibration_and_agreement(
                 bx.append(float(ps[mask].mean()))
                 by.append(float(yb[mask].mean()))
         row = metrics_df[(metrics_df["split"] == "val_cal_hard") & (metrics_df["model"] == m)].iloc[0]
-        ax.plot(bx, by, f"-{mk}", color=col, lw=1.7, ms=4.8, label=f"{lbl} (ECE={row['ece_10']:.3f}, BS={row['brier']:.3f})")
+        ax.plot(bx, by, f"-{mk}", color=col, lw=1.7, ms=4.5, label=f"{lbl} (ECE={row['ece_10']:.3f}, BS={row['brier']:.3f})")
     ax.set_xlabel("Predicted score_added_vessel")
     ax.set_ylabel("Empirical vessel addition fraction")
     ax.set_title("(a) 10-Bin Reliability Diagram (Cal-Hard Val)")
     ax.set_xlim(0.0, 1.02)
     ax.set_ylim(0.0, 1.02)
-    ax.legend(frameon=False, fontsize=7.2, loc="upper left")
+    ax.legend(frameon=False, fontsize=6.9, loc="upper left")
     ax.grid(alpha=0.25)
 
     # Panel B: Predicted vs True scatter for Ensemble_v4 on val_cal_hard
@@ -317,21 +318,21 @@ def _plot_fig1_calibration_and_agreement(
     ax = axes[2]
     regimes = ["rmse_zero", "rmse_low", "rmse_mod", "rmse_high"]
     r_labels = ["Zero\n(y=0)", "Low\n(0, 0.10]", "Moderate\n(0.10, 0.40]", "High\n(>0.40)"]
-    models = ["RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple"]
-    colors = ["#7f7f7f", "#d62728", "#ff7f0e", "#1f77b4", "#009E73"]
+    models = ["RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple", "Ensemble_v5_Blend"]
+    colors = ["#7f7f7f", "#d62728", "#ff7f0e", "#1f77b4", "#009E73", "#9467bd"]
     x = np.arange(len(regimes))
-    bw = 0.155
+    bw = 0.13
     sub = metrics_df[metrics_df["split"] == "val_cal_hard"].set_index("model")
     for idx_m, (m, col) in enumerate(zip(models, colors)):
         vals = [float(sub.loc[m, r]) for r in regimes]
-        lbl = "RPCA" if "RPCA" in m else ("v5_simple" if "v5" in m else m)
-        ax.bar(x + (idx_m - 2.0) * bw, vals, width=bw, color=col, label=lbl)
+        lbl = "RPCA" if "RPCA" in m else ("v5_simple" if "Simple" in m else ("v5_blend" if "Blend" in m else m))
+        ax.bar(x + (idx_m - 2.5) * bw, vals, width=bw, color=col, label=lbl)
     ax.set_xticks(x)
     ax.set_xticklabels(r_labels, fontsize=8.5)
     ax.set_ylim(0.0, 0.66)
     ax.set_ylabel("Regime RMSE (Lower is Better)")
     ax.set_title("(c) Regime-Stratified Share Error (Cal-Hard Val)")
-    ax.legend(frameon=False, fontsize=7.2, loc="upper left", ncol=2)
+    ax.legend(frameon=False, fontsize=6.9, loc="upper left", ncol=2)
     ax.grid(axis="y", alpha=0.25)
 
     fig.tight_layout()
@@ -355,15 +356,16 @@ def _plot_fig2_boundary_stress(
         ("Ensemble_v3", "#ff7f0e", "^", "Ensemble_v3"),
         ("Ensemble_v4", "#1f77b4", "o", "Ensemble_v4"),
         ("Ensemble_v5_Simple", "#009E73", "P", "v5_simple (flat h(f)-inv)"),
+        ("Ensemble_v5_Blend", "#9467bd", "D", "v5_blend (50/50)"),
     ):
         sub = cal_df[cal_df["model"] == m].sort_values("tilt_db_per_dec")
-        ax.plot(sub["tilt_db_per_dec"], sub["roc_auc"], f"-{mk}", color=col, lw=1.8, ms=4.8, label=lbl)
+        ax.plot(sub["tilt_db_per_dec"], sub["roc_auc"], f"-{mk}", color=col, lw=1.7, ms=4.5, label=lbl)
     ax.axvline(0.0, color="#555555", ls=":", lw=1.0)
     ax.set_xlabel("Injected Hydrophone Tilt h(f) (dB / decade)")
     ax.set_ylabel("Unseen-Station ROC AUC (Presence)")
     ax.set_title("(a) Cross-Hydrophone Tilt Stress Test (Holdout)")
     ax.set_ylim(0.45, 1.02)
-    ax.legend(frameon=True, facecolor="white", edgecolor="#dddddd", fontsize=7.2, loc="center left")
+    ax.legend(frameon=True, facecolor="white", edgecolor="#dddddd", fontsize=6.9, loc="center left")
     ax.grid(alpha=0.25)
 
     # Panel B: Per-Stratum RMSE across SA physical strata (val_cal_hard + val_standard)
@@ -371,21 +373,22 @@ def _plot_fig2_boundary_stress(
     strata = ["strict_hf_ship", "reef_active", "glitch_drop", "vlf_surf", "ambient_normal"]
     s_labels = ["Strict SA\nShip", "Shrimp\nReef", "Glitch\nDrop", "VLF\nSurf", "Ambient\nNormal"]
     sx = np.arange(len(strata))
-    bw = 0.20
+    bw = 0.16
     for idx_m, (m, col, lbl) in enumerate((
         ("Ensemble_v2", "#d62728", "Ensemble_v2"),
         ("Ensemble_v3", "#ff7f0e", "Ensemble_v3"),
         ("Ensemble_v4", "#1f77b4", "Ensemble_v4"),
         ("Ensemble_v5_Simple", "#009E73", "v5_simple"),
+        ("Ensemble_v5_Blend", "#9467bd", "v5_blend"),
     )):
         sub = stratum_df[(stratum_df["scope"] == "val_combined") & (stratum_df["model"] == m)].set_index("group")
         vals = [float(sub.loc[s, "rmse"]) if s in sub.index else 0.0 for s in strata]
-        ax.bar(sx + (idx_m - 1.5) * bw, vals, width=bw, color=col, label=lbl)
+        ax.bar(sx + (idx_m - 2.0) * bw, vals, width=bw, color=col, label=lbl)
     ax.set_xticks(sx)
     ax.set_xticklabels(s_labels, fontsize=8.2)
     ax.set_ylabel("Stratum Share RMSE (Lower is Better)")
     ax.set_title("(b) Boundary Stratum Error (Cal-Hard + Std Val)")
-    ax.legend(frameon=False, fontsize=7.2, ncol=2)
+    ax.legend(frameon=False, fontsize=6.9, ncol=2)
     ax.grid(axis="y", alpha=0.25)
 
     # Panel C: JOMOPANS L_excess MAE (dB) across models & splits
@@ -393,19 +396,19 @@ def _plot_fig2_boundary_stress(
     splits = ["val_cal_hard", "val_standard", "holdout"]
     sp_labels = ["Cal-Hard Val", "Standard Val", "Station Holdout"]
     mx = np.arange(len(splits))
-    models = ["RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple"]
-    colors = ["#7f7f7f", "#d62728", "#ff7f0e", "#1f77b4", "#009E73"]
-    bw2 = 0.155
+    models = ["RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple", "Ensemble_v5_Blend"]
+    colors = ["#7f7f7f", "#d62728", "#ff7f0e", "#1f77b4", "#009E73", "#9467bd"]
+    bw2 = 0.13
     for idx_m, (m, col) in enumerate(zip(models, colors)):
         sub = metrics_df[metrics_df["model"] == m].set_index("split")
         vals = [float(sub.loc[sp, "jomopans_lex_mae_db"]) for sp in splits]
-        lbl = "RPCA" if "RPCA" in m else ("v5_simple" if "v5" in m else m)
-        ax.bar(mx + (idx_m - 2.0) * bw2, vals, width=bw2, color=col, label=lbl)
+        lbl = "RPCA" if "RPCA" in m else ("v5_simple" if "Simple" in m else ("v5_blend" if "Blend" in m else m))
+        ax.bar(mx + (idx_m - 2.5) * bw2, vals, width=bw2, color=col, label=lbl)
     ax.set_xticks(mx)
     ax.set_xticklabels(sp_labels, fontsize=8.5)
     ax.set_ylabel("JOMOPANS Excess-Level MAE (dB)")
     ax.set_title("(c) Acoustic Excess-Level Error L_ex (MSFD D11C2)")
-    ax.legend(frameon=False, fontsize=7.2, ncol=2)
+    ax.legend(frameon=False, fontsize=6.9, ncol=2)
     ax.grid(axis="y", alpha=0.25)
 
     fig.tight_layout()
@@ -509,7 +512,8 @@ def main() -> None:
         prov = pd.read_csv(args.data_dir / f"{sp}_provenance.csv")
         splits[sp] = (d["X"].astype(np.float64), d["y"].astype(np.float64), prov)
 
-    # Load saved model bundles (infer only; lazy-import predict_v5 to avoid circular import with modeling_v5_simple)
+    # Load saved model bundles (infer only; lazy-import predict_v5/v5_blend to avoid circular import)
+    from modeling_v5_blend import blend_predictions_v5  # noqa: E402
     from modeling_v5_simple import predict_from_bundle_v5_simple as predict_v5  # noqa: E402
 
     b2 = joblib.load(ROOT / "models/v2/bundle.joblib")
@@ -531,6 +535,9 @@ def main() -> None:
         all_preds[sp]["Ensemble_v3"] = predict_v3(b3, X_sp)
         all_preds[sp]["Ensemble_v4"] = predict_v4(b4, X_sp)
         all_preds[sp]["Ensemble_v5_Simple"] = predict_v5(b5, X_sp)
+        all_preds[sp]["Ensemble_v5_Blend"] = blend_predictions_v5(
+            *all_preds[sp]["Ensemble_v4"], *all_preds[sp]["Ensemble_v5_Simple"]
+        )
 
         for m, (p_sh, p_sc) in all_preds[sp].items():
             metric_rows.append(compute_standardized_metrics(sp, m, y_sp, p_sh, p_sc))
@@ -543,7 +550,7 @@ def main() -> None:
     # Combined val_cal_hard + val_standard by physical stratum
     y_comb = np.concatenate([splits["val_cal_hard"][1], splits["val_standard"][1]])
     st_comb = np.concatenate([splits["val_cal_hard"][2]["bg_stratum"].to_numpy(), splits["val_standard"][2]["bg_stratum"].to_numpy()])
-    for m in ("RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple"):
+    for m in ("RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple", "Ensemble_v5_Blend"):
         p_sh_c = np.concatenate([all_preds["val_cal_hard"][m][0], all_preds["val_standard"][m][0]])
         p_sc_c = np.concatenate([all_preds["val_cal_hard"][m][1], all_preds["val_standard"][m][1]])
         for grp_name in pd.unique(st_comb):
@@ -556,7 +563,7 @@ def main() -> None:
     # Per-station on holdout
     _, y_ho, prov_ho = splits["holdout"]
     ho_stations = prov_ho["station"].to_numpy()
-    for m in ("RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple"):
+    for m in ("RPCA_Unsupervised", "Ensemble_v2", "Ensemble_v3", "Ensemble_v4", "Ensemble_v5_Simple", "Ensemble_v5_Blend"):
         p_sh_h, p_sc_h = all_preds["holdout"][m]
         for st_name in sorted(pd.unique(ho_stations)):
             mask = ho_stations == st_name
@@ -577,12 +584,15 @@ def main() -> None:
     cal_rows = []
     for tilt in (-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0, 8.0, 10.0):
         X_warped = X_ho + tilt * log_f_norm
+        p4_w = predict_v4(b4, X_warped)
+        p5_w = predict_v5(b5, X_warped)
         eval_map = {
             "RPCA_Unsupervised": eval_rpca_unsupervised(X_warped)[:2],
             "Ensemble_v2": predict_v2(b2, X_warped),
             "Ensemble_v3": predict_v3(b3, X_warped),
-            "Ensemble_v4": predict_v4(b4, X_warped),
-            "Ensemble_v5_Simple": predict_v5(b5, X_warped),
+            "Ensemble_v4": p4_w,
+            "Ensemble_v5_Simple": p5_w,
+            "Ensemble_v5_Blend": blend_predictions_v5(*p4_w, *p5_w),
         }
         for m, (sh_w, sc_w) in eval_map.items():
             auc_w = float(roc_auc_score(yb_ho, sc_w))

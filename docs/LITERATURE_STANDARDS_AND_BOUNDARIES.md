@@ -61,12 +61,13 @@ All metrics below were measured locally via `scripts/standardized_evaluation_sui
 | `Ensemble_v2` | `0.8364` | `0.811` | `0.668` | `0.753` | `0.886` | `0.9312` | `0.1889` | `0.0538` | `0.1328` |
 | `Ensemble_v3` | `0.8788` | `0.897` | `0.818` | `0.837` | `0.631` | `0.9634` | `0.0470` | `0.0075` | `0.1764` |
 | **`Ensemble_v4`** | **`0.8933`** | **`0.920`** | **`0.859`** | **`0.864`** | **`0.547`** | **`0.9800`** | **`0.0273`** | **`0.0033`** | **`0.1996`** |
-| `Ensemble_v5_Simple` | `0.7843` | `0.608` | `0.423` | `0.690` | `1.352` | `0.8765` | `0.1009` | `0.0243` | `0.1045` |
+| `Ensemble_v5_Simple` | `0.7843` | `0.608` | `0.423` | `0.680` | `1.352` | `0.8765` | `0.1009` | `0.0141` | `0.1061` |
+| `Ensemble_v5_Blend` | `0.8542` | `0.827` | `0.737` | `0.817` | `0.959` | `0.9662` | `0.0877` | `0.0149` | `0.1821` |
 
 ### 5.2 Unseen-Station `Holdout` (`09_Fish_Hoek` + `10_Sea_Point`, $n = 541$) and Hydrophone Tilt Stress Test
 
-- **Baseline Unwarped `Holdout` (`0 dB/dec`):** `Ensemble_v4` improves `1 - RMSE` from `0.8886` (`v2`) and `0.8971` (`v3`) to **`0.9219`**, Lin's `CCC` from `0.852` to **`0.924`**, JOMOPANS $L_{\text{ex}}$ MAE from `0.481 dB` to **`0.308 dB`**, and `zero_rmse` from `0.0704` (`v2`) / `0.0758` (`v3`) down to **`0.0329`**. `Ensemble_v5_Simple` trades high synthetic fit (`0.8382` `1 - RMSE`, `CCC 0.666`, `ECE_10 0.0432`) intentionally for strict parsimony and zero tilt leakage.
-- **Under Extreme `+8 dB/dec` Unseen Hydrophone Tilt (`holdout` stress curve):** `Ensemble_v2` degrades to `ROC AUC = 0.8657` (`zero_rmse = 0.2023`, `logloss = 1.1879`) and `Ensemble_v3` suffers `zero_rmse = 0.2045`, `Ensemble_v4` achieves `ROC AUC = 0.9561` (`zero_rmse = 0.0929`, `logloss = 0.3704`), and **`Ensemble_v5_Simple` sustains a completely flat horizontal `ROC AUC = 0.9194` across `-6..+10 dB/dec` with the lowest quiet false-positive error (`zero_rmse = 0.0787`) and lowest `+8 dB/dec` `logloss` (`0.3578`)**.
+- **Baseline Unwarped `Holdout` (`0 dB/dec`):** `Ensemble_v4` improves `1 - RMSE` from `0.8886` (`v2`) and `0.8971` (`v3`) to **`0.9219`**, Lin's `CCC` from `0.852` to **`0.924`**, JOMOPANS $L_{\text{ex}}$ MAE from `0.481 dB` to **`0.308 dB`**, and `zero_rmse` from `0.0704` (`v2`) / `0.0758` (`v3`) down to **`0.0329`**. `Ensemble_v5_Simple` trades synthetic fit (`0.8382` `1 - RMSE`, `CCC 0.666`, `ECE_10 0.0432`) for zero tilt leakage, while 50/50 `Ensemble_v5_Blend` delivers `0.8914` (`CCC 0.843`, `AUC 0.9629`, `zero_rmse 0.0507`).
+- **Under Extreme `+8 dB/dec` Unseen Hydrophone Tilt (`holdout` stress curve):** `Ensemble_v2` degrades to `ROC AUC = 0.8657` (`zero_rmse = 0.2023`, `logloss = 1.1879`) and `Ensemble_v3` suffers `zero_rmse = 0.2045`; `Ensemble_v4` achieves `ROC AUC = 0.9561` (`zero_rmse = 0.0929`, `logloss = 0.3704`); `Ensemble_v5_Simple` sustains flat horizontal `ROC AUC = 0.9194` across `-6..+10 dB/dec` (`zero_rmse = 0.0787`); and **`Ensemble_v5_Blend` achieves the best `+8 dB/dec` `1 - RMSE` (`0.8390`), lowest `logloss` (`0.3310`), and lowest `Brier` (`0.1026`) at `0.9490` `ROC AUC` (`zero_rmse = 0.0807`)**.
 
 ### 5.3 Visual Evidence (`reports/standards_benchmark/figures/`)
 1. [`fig1_standards_calibration_and_agreement.png`](../reports/standards_benchmark/figures/fig1_standards_calibration_and_agreement.png): 10-bin reliability calibration curve, Lin's CCC / NSE parity plot, and regime-stratified RMSE across Zero / Low / Moderate / High share buckets.
@@ -75,11 +76,10 @@ All metrics below were measured locally via `scripts/standardized_evaluation_sui
 
 ---
 
-## 6. Modeling v5-Simple Implemented Parsimony Findings (`scripts/modeling_v5_simple.py`)
+## 6. Modeling v5-Simple (Sub #4 Live AUC Win) & v5-Blend Complementarity
 
-When Submission #3 (`ovjzdeb8`, `candidate_v4_ensemble.csv`) lifted public LB only slightly from `0.77501743` (`0.5484` AUC) to `0.775235755` (`0.556555555` AUC), auditing revealed simulator overfitting (`134/205` tabular features and `CNN2D_v4` channel `ch4` remained tilt-sensitive, `Test.csv` scores saturated at `0.9753` median, and marking real SA `strict_hf_ship` as `y = 0` suppressed coastal ships). I implemented **`Ensemble_v5_Simple`** (`submissions/candidate_v5_simple.csv`, Candidate #4) along this parsimony blueprint:
-1. **Strict 42-Feature $h(f)$-Invariant Pipeline:** Excludes CNN tilt channels and global-spectrum predictors completely; uses only exact `R(t,f)` zone statistics, smooth sigmoid steps (eliminating `0.1 dB` step-grid discontinuities), per-band median-centered `PCEN`, and `RPCA` sparse decomposition features across `Linear_v5`, shallow `LightGBM_v5`, and shallow `CatBoost_v5`.
-2. **Exact Warp Invariance & Real-Ship Restoration:** `Test.csv` predictions vary by at most **`2.89e-33` (share) / `7.77e-16` (score)** under simultaneous `+10 dB/dec` tilt + `4 dB` modal ripple + `+27.5 dB` offset, `Test.csv` score distribution de-saturates (`0.7239` mean vs `0.8571`; `28.4% > 0.95`), and unmixed real SA `strict_hf_ship` windows recover clear vessel sensitivity (`0.5005` score vs `0.2357` ambient).
+1. **Submission #4 (`MAKNM3KB`, `scripts/modeling_v5_simple.py`):** Excludes CNN tilt channels and global-spectrum predictors completely; uses only 42 exact `h(f)`-invariant `R(t,f)` zone statistics, smooth sigmoid steps, per-band centered `PCEN`, and `RPCA` features across `Linear_v5`, shallow `LightGBM_v5`, and shallow `CatBoost_v5`, without suppressing real SA coastal ships in `y=0`. On Zindi public LB (`24 Nov 2026`), it lifted diagnostic **`ROC AUC` to `0.563911111`** (highest live score, `+0.0074` over `v4`) at `0.771209221` `1 - RMSE`, while varying by at most `2.89e-33` (share) / `7.77e-16` (score) under `+10 dB/dec + ripple + 27.5 dB` and recovering real SA `strict_hf_ship` response (`0.5005` vs `0.2357` ambient).
+2. **Candidate #5 (`scripts/modeling_v5_blend.py`, `submissions/candidate_v5_blend.csv`):** Exploits the exact algebraic MSE diversity identity between `Ensemble_v4` (`ovjzdeb8`: best broadband share weighting) and `Ensemble_v5_Simple` (`MAKNM3KB`: best invariant presence detection; `Test.csv` share corr `0.6864`, RMS diff `0.1672`) with zero test-set tuning, beating both parent ensembles under `+8 dB/dec` stress on `1 - RMSE` (`0.8390`), `logloss` (`0.3310`), and `Brier` (`0.1026`).
 
 ---
 

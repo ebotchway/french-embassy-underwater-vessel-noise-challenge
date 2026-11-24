@@ -25,9 +25,9 @@ def build_notebook() -> nbf.NotebookNode:
 
     md(
         """
-# 03 · Domain Generalization (`v2 -> v3 -> v4 -> v5_simple`), Calibration Invariance & Acoustic Standards
+# 03 · Domain Generalization (`v2 -> v3 -> v4 -> v5_simple -> v5_blend`), Calibration Invariance & Acoustic Standards
 
-In this notebook, I document and verify my complete modeling and domain-generalization progression from live Zindi leaderboard Submissions **#1 (`V1_RF_MaxShift`)** and **#2 (`Ensemble_v2`)** through **Modeling v3** (`180` features, hard-negative strata, 7-channel SE-ResNet), **Modeling v4** (`Submission #3`, `205` features with `71` $h(f)$-invariant `R_*`), **Modeling v5-Simple** (`Candidate #4`, ruthlessly simplified to `42` purely $h(f)$-invariant temporal excess, per-band `PCEN`, and `RPCA` features across `3` regularized tabular learners), my **International Acoustic Standards Benchmark** (`ISO 18405:2017`, `IEC 61260-1`, `NPL GPG 133`, `ADEON`, `JOMOPANS`, `PCEN`, `RPCA`), and my **Zindi Staff Site-Level Relative Acoustic Activity Audit** (`17,487` held-out real South African windows). Every check runs deterministically without ever fitting on `Test.csv`.
+In this notebook, I document and verify my complete modeling and domain-generalization progression from live Zindi leaderboard Submissions **#1 (`V1_RF_MaxShift`)** and **#2 (`Ensemble_v2`)** through **Modeling v3** (`180` features, hard-negative strata, 7-channel SE-ResNet), **Modeling v4** (`Submission #3`, `205` features with `71` $h(f)$-invariant `R_*`), **Modeling v5-Simple** (`Submission #4`, `MAKNM3KB`: `42` purely $h(f)$-invariant temporal excess, per-band `PCEN`, and `RPCA` features achieving my highest live `0.563911111` ROC AUC), **Modeling v5-Blend** (`Candidate #5`, zero-tuning `50/50` blend uniting `v4`'s broadband energy weighting with `v5_simple`'s invariant detection), my **International Acoustic Standards Benchmark** (`ISO 18405:2017`, `IEC 61260-1`, `NPL GPG 133`, `ADEON`, `JOMOPANS`, `PCEN`, `RPCA`), and my **Zindi Staff Site-Level Relative Acoustic Activity Audit** (`17,487` held-out real South African windows). Every check runs deterministically without ever fitting on `Test.csv`.
 """
     )
 
@@ -66,6 +66,7 @@ from extract_external_decidecade import EXACT_CENTRES
 from modeling_v4_features import build_cnn_tensors_v4, extract_features_v4
 from modeling_v4_simulator import LOG10_F_NORM, NORM_BAND_COORD
 from modeling_v4_train import predict_from_bundle_v4, seed_everything
+from modeling_v5_blend import blend_predictions_v5
 from modeling_v5_simple import extract_features_v5_simple, predict_from_bundle_v5_simple
 from standardized_evaluation_suite import compute_pcen_map, eval_rpca_unsupervised
 
@@ -77,14 +78,15 @@ print(f"Project root: {ROOT.name} | Deterministic CPU environment locked (seed=4
 
     md(
         """
-## 1. Live Leaderboard Progression (`Submission #1 -> #2 -> #3`) & Domain-Gap Diagnosis
+## 1. Live Leaderboard Progression (`Submission #1 -> #2 -> #3 -> #4`) & Physical Complementarity
 
-Even though `Ensemble_v2` achieved `0.8833` on unseen Fish Hoek + Sea Point synthetic holdout windows and `Ensemble_v4` lifted local unseen holdout accuracy to `0.9219` (`AUC 0.9737`), live Zindi public scores improved monotonically yet modestly across all three submissions:
-- **Submission #1 (`pBUapzRu`, `V1_RF_MaxShift`):** Public `1 - RMSE = 0.761536`, diagnostic `ROC AUC = 0.517533`.
-- **Submission #2 (`1zX9R2QL`, `Ensemble_v2`):** Public `1 - RMSE = 0.77501743` (`RMSE = 0.224982569`), diagnostic `ROC AUC = 0.548377777`.
-- **Submission #3 (`ovjzdeb8`, `Ensemble_v4`):** Public `1 - RMSE = 0.775235755` (`RMSE = 0.224764244`), diagnostic `ROC AUC = 0.556555555`.
+Even though `Ensemble_v2` achieved `0.8833` on unseen Fish Hoek + Sea Point synthetic holdout windows and `Ensemble_v4` lifted local unseen holdout accuracy to `0.9219` (`AUC 0.9737`), live Zindi public scores revealed two complementary strengths across my four scored submissions:
+- **Submission #1 (`pBUapzRu`, `V1_RF_MaxShift`):** Public `1 - RMSE = 0.761535762`, diagnostic `ROC AUC = 0.517533333`.
+- **Submission #2 (`1zX9R2QL`, `Ensemble_v2`):** Public `1 - RMSE = 0.775017430` (`RMSE = 0.224982569`), diagnostic `ROC AUC = 0.548377777`.
+- **Submission #3 (`ovjzdeb8`, `Ensemble_v4`):** Best individual public `1 - RMSE = 0.775235755` (`RMSE = 0.224764244`), diagnostic `ROC AUC = 0.556555555`.
+- **Submission #4 (`MAKNM3KB`, `Ensemble_v5_Simple`):** Best live diagnostic **`ROC AUC = 0.563911111`** (`+0.0074` over `v4`, `+0.0464` over `v1`), with public `1 - RMSE = 0.771209221` (`RMSE = 0.228790778`).
 
-Auditing why a `+0.057` local synthetic improvement only yielded `+0.0002` publicly exposed simulator overfitting and residual leakage: `134/205` `v4` features and `CNN2D_v4` Channel 4 (`64.7%` of score weight) remained tilt-sensitive, leaving `Test.csv` presence scores saturated (`0.9753` median), while labeling real SA `strict_hf_ship` windows as `y = 0` suppressed genuine coastal vessel passes.
+Comparing `#3` and `#4` confirmed that stripping non-$h(f)$-invariant channels and stopping real SA ship suppression in `y=0` genuinely improved unseen vessel discrimination (`0.5639` live AUC), while `Ensemble_v4`'s broadband inter-band energy features preserved better share magnitude scaling (`0.22476` vs. `0.22879`). Pairing both weakly correlated predictions (`0.1672` `Test.csv` RMS diff) yields the zero-tuning `50/50` **`Ensemble_v5_Blend` (`Candidate #5`)**.
 """
     )
 
@@ -99,7 +101,7 @@ lb_history = pd.DataFrame([
         "Public ROC AUC": 0.517533333,
         "Unseen Holdout 1-RMSE": 0.8390,
         "Unseen Holdout AUC": 0.8980,
-        "Status": "Scored (Submitted)",
+        "Status": "Scored (pBUapzRu)",
     },
     {
         "Stage": "Submission #2 (Ensemble_v2)",
@@ -129,17 +131,27 @@ lb_history = pd.DataFrame([
         "Public ROC AUC": 0.556555555,
         "Unseen Holdout 1-RMSE": 0.9219,
         "Unseen Holdout AUC": 0.9737,
-        "Status": "Scored Best Live (ovjzdeb8)",
+        "Status": "Scored Best 1-RMSE (ovjzdeb8)",
     },
     {
-        "Stage": "Candidate #4 (Ensemble_v5_Simple)",
+        "Stage": "Submission #4 (Ensemble_v5_Simple)",
         "Feature Dim": 42,
+        "Public 1-RMSE": 0.771209221,
+        "Public Share RMSE": 0.228790778,
+        "Public ROC AUC": 0.563911111,
+        "Unseen Holdout 1-RMSE": 0.8382,
+        "Unseen Holdout AUC": 0.9194,
+        "Status": "Scored Best Live AUC (MAKNM3KB)",
+    },
+    {
+        "Stage": "Candidate #5 (Ensemble_v5_Blend 50/50)",
+        "Feature Dim": "42+205 (50/50)",
         "Public 1-RMSE": None,
         "Public Share RMSE": None,
         "Public ROC AUC": None,
-        "Unseen Holdout 1-RMSE": 0.8382,
-        "Unseen Holdout AUC": 0.9194,
-        "Status": "Verified & Ready for Submission #4",
+        "Unseen Holdout 1-RMSE": 0.8914,
+        "Unseen Holdout AUC": 0.9629,
+        "Status": "Verified & Ready for Submission #5",
     },
 ])
 display(lb_history)
@@ -271,13 +283,11 @@ plt.show()
 
     md(
         """
-## 4. Modeling v5-Simple (`Candidate #4`): Exact $h(f)$-Invariant Parsimony Ablation (`42` Features)
+## 4. Modeling v5-Simple (`Submission #4`, `0.5639` Live AUC) & Zero-Tuning `v5-Blend` (`Candidate #5`)
 
-Because live Submission #3 (`Ensemble_v4`: `0.775235755` / `0.556555555` AUC) confirmed that adding complexity boosted synthetic CV far more than real generalization (`134/205` non-$h(f)$-invariant features and CNN Channel 4 kept `Test.csv` score saturated at `0.9753` median), I built **Modeling v5-Simple** as a clean parsimony test:
-1. **Strict `42`-feature $h(f)$-invariant basis:** Strictly temporal excess $R(t,f)$ across 5 bands (`VLF/LF/MF/HF/BB`), smooth sigmoids (removing 0.1 dB grid discontinuities), per-band median-centered `PCEN`, and `RPCA` sparse/low-rank ratios — **zero** raw spectral levels, **zero** `CNN2D`, and an $h(f)$-invariant glitch filter.
-2. **Removed simulator biases:** Excluded real SA `strict_hf_ship` windows from `y = 0` negatives (`0` real coastal passes suppressed) and widened synthetic shipping tilts (`-12` to `+6 dB/dec`) with `55%` smooth CPA bells (`8,000` train / `1,500` cal-warped val / `541` holdout).
+Live Submission #4 (`MAKNM3KB`) proved the core parsimony hypothesis on unseen Zindi deployments: stripping modeling strictly down to **`42` purely $h(f)$-invariant features** (`R(t,f)` zone stats, smooth sigmoids, per-band median-centered `PCEN`, `RPCA` decomposition ratios) and stopping real `strict_hf_ship` negative suppression raised live diagnostic **ROC AUC to `0.563911111`** (`+0.0074` over `Ensemble_v4`). At the same time, subtracting per-band `q20` removed inter-band energy scale needed for broadband `share_added_vessel` magnitude (`0.22879` vs. `0.22476`).
 
-Below I verify exact `Test.csv` and `holdout` calibration invariance, check real SA stratum behavior, and compare all `4` submission CSVs.
+To unite both strengths with zero test-set tuning, **Modeling v5-Blend** (`scripts/modeling_v5_blend.py`) takes an unweighted `50/50` convex average of `Ensemble_v4` (`ovjzdeb8`) and `Ensemble_v5_Simple` (`MAKNM3KB`). Under severe `+8 dB/dec` holdout tilt stress, `Ensemble_v5_Blend` outperforms both parents on `1 - RMSE` (`0.8390`), `logloss` (`0.3310`), and `Brier` (`0.1026`), exploiting their `0.1672` `Test.csv` share RMS diversity. Below I inspect both `v5_simple` and `v5_blend` evaluations side by side.
 """
     )
 
@@ -286,14 +296,20 @@ Below I verify exact `Test.csv` and `holdout` calibration invariance, check real
 v5_cmp = pd.read_csv(ROOT / "reports/modeling_v5_simple/comparison_metrics.csv")
 v5_imp = pd.read_csv(ROOT / "reports/modeling_v5_simple/feature_importance.csv")
 v5_sum = json.loads((ROOT / "reports/modeling_v5_simple/summary.json").read_text())
+blend_cmp = pd.read_csv(ROOT / "reports/modeling_v5_blend/comparison_metrics.csv")
+blend_sum = json.loads((ROOT / "reports/modeling_v5_blend/summary.json").read_text())
 
 display(v5_cmp.round(4))
-display(v5_imp.head(12).round(2))
-print("Real unmixed SA holdout strata under v5_simple (y = 0):")
-display(pd.DataFrame(v5_sum["real_sa_holdout_y0_strata"]).T.round(4))
+display(v5_imp.head(10).round(2))
+print("Side-by-side comparison across val_cal_hard, val_standard, holdout, and +8 dB/dec tilt stress (v5_blend vs parents):")
+display(blend_cmp.round(4))
+print("Real unmixed SA holdout strata (y = 0) under v4 vs v5_simple vs v5_blend:")
+display(pd.DataFrame(blend_sum["real_sa_holdout_y0_strata"]).T.round(4))
 print(
     f"v5_simple Test.csv warp max|diff| -> share={v5_sum['test_warp_max_diff_share']:.2e}, "
-    f"score={v5_sum['test_warp_max_diff_score']:.2e} | mean_score={v5_sum['test_score_mean']:.4f}"
+    f"score={v5_sum['test_warp_max_diff_score']:.2e} | "
+    f"v4 vs v5_simple Test RMS diff={blend_sum['test_stats']['v4_vs_v5_share_rms_diff']:.4f}, "
+    f"corr(share)={blend_sum['test_stats']['v4_vs_v5_share_corr']:.4f}"
 )
 """
     )
@@ -302,7 +318,7 @@ print(
         """
 ## 5. International Acoustic Standards & Boundary Stress Benchmark
 
-Beyond Zindi's competition metrics, I evaluated `Constant_Mean`, `Physics_Robust_q20`, unsupervised `RPCA_Unsupervised` (Candès et al., 2011; Lin et al., 2017), `Ensemble_v2`, `Ensemble_v3`, `Ensemble_v4`, and `Ensemble_v5_Simple` across **16+ international underwater acoustic metrics**: `ISO 18405:2017` terminology, `IEC 61260-1` base-10 deci-decades, `NPL GPG 133` & `ADEON` amplitude/calibration checks, `JOMOPANS` excess shipping sound $L_{\\text{excess}} = -10\\log_{10}(1 - s)$ MAE in dB, Lin's Concordance Correlation Coefficient (`CCC`), Nash-Sutcliffe Efficiency (`NSE`), regime-wise RMSE (`Zero`, `Low`, `Mod`, `High`), Brier reliability/resolution/uncertainty decomposition, Expected Calibration Error (`ECE_10`), and a synthetic `-6` to `+10 dB/dec` hydrophone calibration-tilt stress test on unseen `holdout`.
+Beyond Zindi's competition metrics, I evaluated `Constant_Mean`, `Physics_Robust_q20`, unsupervised `RPCA_Unsupervised` (Candès et al., 2011; Lin et al., 2017), `Ensemble_v2`, `Ensemble_v3`, `Ensemble_v4`, `Ensemble_v5_Simple`, and `Ensemble_v5_Blend` across **16+ international underwater acoustic metrics**: `ISO 18405:2017` terminology, `IEC 61260-1` base-10 deci-decades, `NPL GPG 133` & `ADEON` amplitude/calibration checks, `JOMOPANS` excess shipping sound $L_{\\text{excess}} = -10\\log_{10}(1 - s)$ MAE in dB, Lin's Concordance Correlation Coefficient (`CCC`), Nash-Sutcliffe Efficiency (`NSE`), regime-wise RMSE (`Zero`, `Low`, `Mod`, `High`), Brier reliability/resolution/uncertainty decomposition, Expected Calibration Error (`ECE_10`), and a synthetic `-6` to `+10 dB/dec` hydrophone calibration-tilt stress test on unseen `holdout`.
 """
     )
 
@@ -328,8 +344,8 @@ display(std_full[std_full["split"].isin(["val_cal_hard", "holdout"])][cols_show]
 print("Holdout Calibration-Tilt Stress (+8 dB/dec extreme sensor tilt):")
 display(tilt_df[tilt_df["tilt_db_per_dec"] == 8.0].round(4))
 
-print("Holdout Per-Station & Combined Stratum Breakdown (Ensemble_v2 vs Ensemble_v4 vs Ensemble_v5_Simple):")
-sub_st = strata_df[strata_df["model"].isin(["Ensemble_v2", "Ensemble_v4", "Ensemble_v5_Simple"])][
+print("Holdout Per-Station & Combined Stratum Breakdown (Ensemble_v2 vs Ensemble_v4 vs Ensemble_v5_Simple vs Ensemble_v5_Blend):")
+sub_st = strata_df[strata_df["model"].isin(["Ensemble_v2", "Ensemble_v4", "Ensemble_v5_Simple", "Ensemble_v5_Blend"])][
     ["scope", "group", "model", "n", "zindi_score_1_minus_rmse", "rmse_zero", "roc_auc", "jomopans_lex_mae_db", "ece_10"]
 ]
 display(sub_st.sort_values(["scope", "group", "model"]).round(4))
@@ -350,9 +366,9 @@ for title, rel in [
 
     md(
         """
-## 6. End-to-End Reproducibility Verification (`v2`, `v3`, `v4`, `v5_simple`)
+## 6. End-to-End Reproducibility Verification (`v2`, `v3`, `v4`, `v5_simple`, `v5_blend`)
 
-Every submission artifact is audited below against `sample_submission.csv` (`1,500` rows, exact `ID` order, finite values in `[0, 1]`, SHA-256 checksums). I also reload both `models/v4/bundle_v4.joblib` and `models/v5_simple/bundle_v5_simple.joblib` from disk to verify finite predictions, `+37.5 dB` shift invariance (`v4`), and exact `+10 dB/dec + 4 dB ripple + 27.5 dB` invariance (`v5_simple`).
+Every submission artifact is audited below against `sample_submission.csv` (`1,500` rows, exact `ID` order, finite values in `[0, 1]`, SHA-256 checksums). I also reload both `models/v4/bundle_v4.joblib` and `models/v5_simple/bundle_v5_simple.joblib` from disk to verify finite predictions, `+37.5 dB` shift invariance (`v4`), exact `+10 dB/dec + 4 dB ripple + 27.5 dB` invariance (`v5_simple`), and exact `50/50` consistency for `Ensemble_v5_Blend`.
 """
     )
 
@@ -365,7 +381,8 @@ for tag, rel in [
     ("candidate_v2_ensemble (Sub #2: 0.7750)", "submissions/candidate_v2_ensemble.csv"),
     ("candidate_v3_ensemble (Intermediate v3)", "submissions/candidate_v3_ensemble.csv"),
     ("candidate_v4_ensemble (Sub #3: 0.7752)", "submissions/candidate_v4_ensemble.csv"),
-    ("candidate_v5_simple (Candidate #4: 42 h(f)-inv)", "submissions/candidate_v5_simple.csv"),
+    ("candidate_v5_simple (Sub #4: 0.7712 / 0.5639 AUC)", "submissions/candidate_v5_simple.csv"),
+    ("candidate_v5_blend (Candidate #5: 50/50 v4+v5)", "submissions/candidate_v5_blend.csv"),
 ]:
     p = ROOT / rel
     df = pd.read_csv(p)
@@ -386,7 +403,7 @@ for tag, rel in [
     })
 display(pd.DataFrame(sub_rows))
 
-# Live bundle_v4 reload + +37.5 dB check AND bundle_v5_simple reload + +10 dB/dec + ripple + gain check
+# Live bundle_v4 reload + +37.5 dB check AND bundle_v5_simple reload + +10 dB/dec + ripple + gain check + v5_blend consistency
 bundle_v4 = joblib.load(ROOT / "models/v4/bundle_v4.joblib")
 sh_a, sc_a = predict_from_bundle_v4(bundle_v4, X_sub)
 sh_b, sc_b = predict_from_bundle_v4(bundle_v4, X_sub + 37.5)
@@ -405,6 +422,10 @@ print(
     f"Score max|diff|={np.max(np.abs(sc_5a - sc_5b)):.2e}"
 )
 assert np.max(np.abs(sh_5a - sh_5b)) < 1e-3 and np.max(np.abs(sc_5a - sc_5b)) < 1e-6
+
+sh_bl, sc_bl = blend_predictions_v5(sh_a, sc_a, sh_5a, sc_5a)
+assert np.allclose(sh_bl, 0.5 * (sh_a + sh_5a), atol=1e-12) and np.allclose(sc_bl, 0.5 * (sc_a + sc_5a), atol=1e-12)
+print(f"Live v5_blend consistency -> PASS (Share max|diff vs 0.5*(v4+v5)|={np.max(np.abs(sh_bl - 0.5*(sh_a + sh_5a))):.2e})")
 """
     )
 
