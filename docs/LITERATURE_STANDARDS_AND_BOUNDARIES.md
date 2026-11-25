@@ -1,13 +1,13 @@
 # International Underwater Acoustic Standards, Empirical Boundaries, and Modeling Roadmap
 
 **Author:** Emmanuel Kwaku Botchway  
-**Date:** 24 November 2026  
+**Date:** 25 November 2026  
 
 ---
 
 ## 1. Executive Summary
 
-To close the generalization gap between local unseen-station holdouts (`0.8833–0.9219` `1 - RMSE`) and Zindi's public evaluation (`0.77501743` `1 - RMSE`, `0.548377777` `ROC AUC` on Submission #2; `0.775235755` / `0.556555555` on Submission #3), I grounded my pipeline in international passive acoustic monitoring (`PAM`) standards and cross-device underwater/bioacoustic domain-generalization literature rather than waiting passively for external clarifications. By mapping this challenge directly onto **ISO 18405:2017**, **IEC 61260-1**, **NPL Good Practice Guide No. 133**, **ADEON**, **JOMOPANS / EU MSFD D11C2**, and **Merchant et al. (2012, 2015)**, and by implementing both unsupervised baselines (**PCEN**, **RPCA**) and a 16-metric international evaluation suite (`scripts/standardized_evaluation_suite.py`), I quantified every physical boundary affecting my models and tested a purely $h(f)$-invariant parsimony ablation (**Modeling v5-Simple**).
+To reconcile local unseen-station actuals (`0.8382–0.9219` `1 - RMSE`) with Zindi's five live submissions (`#1: 0.7615 / 0.5175 AUC`, `#2: 0.7750 / 0.5484 AUC`, `#3: 0.7752 / 0.5566 AUC`, `#4: 0.7712 / 0.5639 AUC`, and `#5 a6JJCya4: 0.7875 / 0.5724 AUC`), I grounded my pipeline in international passive acoustic monitoring (`PAM`) standards and cross-device domain-generalization literature. Mapping this challenge directly onto **ISO 18405:2017**, **IEC 61260-1**, **NPL Good Practice Guide No. 133**, **ADEON**, **JOMOPANS / EU MSFD D11C2**, and **Merchant et al. (2012, 2015)**, and implementing both unsupervised baselines (**PCEN**, **RPCA**) and a 16-metric international evaluation suite (`scripts/standardized_evaluation_suite.py`), quantified every physical boundary affecting single models and explained why pairing `v4` and `v5_simple` improved both live metrics simultaneously.
 
 ---
 
@@ -76,10 +76,10 @@ All metrics below were measured locally via `scripts/standardized_evaluation_sui
 
 ---
 
-## 6. Modeling v5-Simple (Sub #4 Live AUC Win) & v5-Blend Complementarity
+## 6. Modeling v5-Simple (Sub #4) & v5-Blend (Sub #5 Live Breakthrough)
 
-1. **Submission #4 (`MAKNM3KB`, `scripts/modeling_v5_simple.py`):** Excludes CNN tilt channels and global-spectrum predictors completely; uses only 42 exact `h(f)`-invariant `R(t,f)` zone statistics, smooth sigmoid steps, per-band centered `PCEN`, and `RPCA` features across `Linear_v5`, shallow `LightGBM_v5`, and shallow `CatBoost_v5`, without suppressing real SA coastal ships in `y=0`. On Zindi public LB (`24 Nov 2026`), it lifted diagnostic **`ROC AUC` to `0.563911111`** (highest live score, `+0.0074` over `v4`) at `0.771209221` `1 - RMSE`, while varying by at most `2.89e-33` (share) / `7.77e-16` (score) under `+10 dB/dec + ripple + 27.5 dB` and recovering real SA `strict_hf_ship` response (`0.5005` vs `0.2357` ambient).
-2. **Candidate #5 (`scripts/modeling_v5_blend.py`, `submissions/candidate_v5_blend.csv`):** Exploits the exact algebraic MSE diversity identity between `Ensemble_v4` (`ovjzdeb8`: best broadband share weighting) and `Ensemble_v5_Simple` (`MAKNM3KB`: best invariant presence detection; `Test.csv` share corr `0.6864`, RMS diff `0.1672`) with zero test-set tuning, beating both parent ensembles under `+8 dB/dec` stress on `1 - RMSE` (`0.8390`), `logloss` (`0.3310`), and `Brier` (`0.1026`).
+1. **Submission #4 (`MAKNM3KB`, `scripts/modeling_v5_simple.py`):** Excludes CNN tilt channels and global-spectrum predictors completely; uses only 42 exact `h(f)`-invariant `R(t,f)` zone statistics, smooth sigmoid steps, per-band centered `PCEN`, and `RPCA` features across `Linear_v5`, shallow `LightGBM_v5`, and shallow `CatBoost_v5`, without suppressing real SA coastal ships in `y=0`. Offline actuals: `v5_val_100pct_cal 0.8302`, `v4_holdout 0.8382`, flat `+8 dB/dec AUC 0.9194 / zero_rmse 0.0787`, `2.89e-33` `Test.csv` warp drift, and restored real SA `strict_hf_ship` score (`0.5005` vs `0.2357` ambient). On Zindi public LB (`24 Nov 2026`), it lifted diagnostic **`ROC AUC` to `0.563911111`** (`+0.0074` over `v4`) at `0.771209221` `1 - RMSE`.
+2. **Submission #5 (`a6JJCya4`, `scripts/modeling_v5_blend.py`, `submissions/candidate_v5_blend.csv`):** Exploits the exact algebraic MSE diversity identity between `Ensemble_v4` (`ovjzdeb8`: best offline `0.9219` / broadband share weighting) and `Ensemble_v5_Simple` (`MAKNM3KB`: best invariant presence detection; `Test.csv` share corr `0.6864`, RMS diff `0.1672`) with zero test-set tuning. Offline, it achieves `val_cal_hard 0.8542`, `holdout 0.8914`, and leads `+8 dB/dec` tilt stress (`1 - RMSE 0.8390`, `logloss 0.3310`, `Brier 0.1026`). Live on Zindi (`25 Nov 2026`), **Submission #5 jumped simultaneously to competition-best `1 - RMSE = 0.787467941` (`RMSE = 0.212532058`, `+0.01223` over `#3`) and `ROC AUC = 0.572400000` (`25,758 / 45,000`)**.
 
 ---
 

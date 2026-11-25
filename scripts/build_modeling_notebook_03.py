@@ -27,7 +27,7 @@ def build_notebook() -> nbf.NotebookNode:
         """
 # 03 · Domain Generalization (`v2 -> v3 -> v4 -> v5_simple -> v5_blend`), Calibration Invariance & Acoustic Standards
 
-In this notebook, I document and verify my complete modeling and domain-generalization progression from live Zindi leaderboard Submissions **#1 (`V1_RF_MaxShift`)** and **#2 (`Ensemble_v2`)** through **Modeling v3** (`180` features, hard-negative strata, 7-channel SE-ResNet), **Modeling v4** (`Submission #3`, `205` features with `71` $h(f)$-invariant `R_*`), **Modeling v5-Simple** (`Submission #4`, `MAKNM3KB`: `42` purely $h(f)$-invariant temporal excess, per-band `PCEN`, and `RPCA` features achieving my highest live `0.563911111` ROC AUC), **Modeling v5-Blend** (`Candidate #5`, zero-tuning `50/50` blend uniting `v4`'s broadband energy weighting with `v5_simple`'s invariant detection), my **International Acoustic Standards Benchmark** (`ISO 18405:2017`, `IEC 61260-1`, `NPL GPG 133`, `ADEON`, `JOMOPANS`, `PCEN`, `RPCA`), and my **Zindi Staff Site-Level Relative Acoustic Activity Audit** (`17,487` held-out real South African windows). Every check runs deterministically without ever fitting on `Test.csv`.
+In this notebook, I document and verify my complete modeling and domain-generalization progression from live Zindi leaderboard Submissions **#1 (`V1_RF_MaxShift`)** and **#2 (`Ensemble_v2`)** through **Modeling v3** (`180` features, hard-negative strata, 7-channel SE-ResNet), **Modeling v4** (`Submission #3`, `ovjzdeb8`: `205` features with `71` $h(f)$-invariant `R_*`), **Modeling v5-Simple** (`Submission #4`, `MAKNM3KB`: `42` purely $h(f)$-invariant temporal excess, per-band `PCEN`, and `RPCA` features achieving `0.563911111` live ROC AUC), and **Modeling v5-Blend** (`Submission #5`, `a6JJCya4`: zero-tuning `50/50` blend achieving competition-best **`0.787467941` (`RMSE 0.212532058`)** and **`0.572400000` ROC AUC**), alongside my **International Acoustic Standards Benchmark** (`ISO 18405:2017`, `IEC 61260-1`, `NPL GPG 133`, `ADEON`, `JOMOPANS`, `PCEN`, `RPCA`) and **Zindi Staff Site-Level Relative Acoustic Activity Audit** (`17,487` held-out real South African windows). Every check runs deterministically without ever fitting on `Test.csv`.
 """
     )
 
@@ -78,15 +78,14 @@ print(f"Project root: {ROOT.name} | Deterministic CPU environment locked (seed=4
 
     md(
         """
-## 1. Live Leaderboard Progression (`Submission #1 -> #2 -> #3 -> #4`) & Physical Complementarity
+## 1. Live Leaderboard (`#1 -> #2 -> #3 -> #4 -> #5`) & Offline Actuals Reconciliation
 
-Even though `Ensemble_v2` achieved `0.8833` on unseen Fish Hoek + Sea Point synthetic holdout windows and `Ensemble_v4` lifted local unseen holdout accuracy to `0.9219` (`AUC 0.9737`), live Zindi public scores revealed two complementary strengths across my four scored submissions:
-- **Submission #1 (`pBUapzRu`, `V1_RF_MaxShift`):** Public `1 - RMSE = 0.761535762`, diagnostic `ROC AUC = 0.517533333`.
-- **Submission #2 (`1zX9R2QL`, `Ensemble_v2`):** Public `1 - RMSE = 0.775017430` (`RMSE = 0.224982569`), diagnostic `ROC AUC = 0.548377777`.
-- **Submission #3 (`ovjzdeb8`, `Ensemble_v4`):** Best individual public `1 - RMSE = 0.775235755` (`RMSE = 0.224764244`), diagnostic `ROC AUC = 0.556555555`.
-- **Submission #4 (`MAKNM3KB`, `Ensemble_v5_Simple`):** Best live diagnostic **`ROC AUC = 0.563911111`** (`+0.0074` over `v4`, `+0.0464` over `v1`), with public `1 - RMSE = 0.771209221` (`RMSE = 0.228790778`).
-
-Comparing `#3` and `#4` confirmed that stripping non-$h(f)$-invariant channels and stopping real SA ship suppression in `y=0` genuinely improved unseen vessel discrimination (`0.5639` live AUC), while `Ensemble_v4`'s broadband inter-band energy features preserved better share magnitude scaling (`0.22476` vs. `0.22879`). Pairing both weakly correlated predictions (`0.1672` `Test.csv` RMS diff) yields the zero-tuning `50/50` **`Ensemble_v5_Blend` (`Candidate #5`)**.
+Evaluating both **local unseen actuals** and **five live Zindi submissions** together reveals why single-model synthetic validation alone can mislead and how physical complementarity solved it:
+- **Submission #1 (`pBUapzRu`, `V1_RF_MaxShift`):** Offline `holdout 0.8390` (`AUC 0.8980`) | Live `1 - RMSE = 0.761535762`, `ROC AUC = 0.517533333`.
+- **Submission #2 (`1zX9R2QL`, `Ensemble_v2`, Rank `508`):** Offline v2 `holdout 0.8833` (unified v4 `val_cal_hard 0.8364`, `holdout 0.8886`, `+8 dB/dec AUC 0.8657 / zRMSE 0.2023`) | Live `1 - RMSE = 0.775017430`, `ROC AUC = 0.548377777`.
+- **Submission #3 (`ovjzdeb8`, `Ensemble_v4`):** Best individual offline `val_cal_hard 0.8933`, `holdout 0.9219` (`AUC 0.9737`, `zero_rmse 0.0329`, `+8 dB/dec AUC 0.9561`) | Live `1 - RMSE = 0.775235755`, `ROC AUC = 0.556555555`.
+- **Submission #4 (`MAKNM3KB`, `Ensemble_v5_Simple`):** Intentionally traded synthetic fit (`v4_val_cal_hard 0.7843`, `v4_holdout 0.8382`) for `42` purely $h(f)$-invariant features and zero real-ship suppression, holding flat `+8 dB/dec` (`0.8382` `1-RMSE`, `0.0787` `zero_rmse`) | Live `1 - RMSE = 0.771209221`, **`ROC AUC = 0.563911111`** (`+0.0074` over `#3`).
+- **Submission #5 (`a6JJCya4`, `Ensemble_v5_Blend` — Best Live Both Metrics):** Unweighted zero-tuning `50/50` blend uniting `#3` (broadband energy magnitude) and `#4` ($h(f)$-invariant vessel discrimination; `Test.csv` `RMS diff = 0.1672`, `corr = 0.6864`). Offline `val_cal_hard 0.8542`, `holdout 0.8914`, best `+8 dB/dec logloss 0.3310` & `1-RMSE 0.8390` | **Competition-best live `1 - RMSE = 0.787467941` (`RMSE = 0.212532058`, `+0.01223` over `#3`) and `ROC AUC = 0.572400000` (`25,758 / 45,000`)**, matching my pre-submission MSE diversity prediction (`0.1583` implied public-split RMS diff).
 """
     )
 
@@ -95,63 +94,87 @@ Comparing `#3` and `#4` confirmed that stripping non-$h(f)$-invariant channels a
 lb_history = pd.DataFrame([
     {
         "Stage": "Submission #1 (V1_RF_MaxShift)",
-        "Feature Dim": 96,
+        "Features": "96 max-shift",
+        "Val Cal-Hard 1-RMSE": None,
+        "Unseen Holdout 1-RMSE": 0.8390,
+        "Unseen Holdout AUC": 0.8980,
+        "+8dB/dec AUC": None,
+        "+8dB/dec zRMSE": None,
+        "+8dB/dec LogLoss": None,
         "Public 1-RMSE": 0.761535762,
         "Public Share RMSE": 0.238464237,
         "Public ROC AUC": 0.517533333,
-        "Unseen Holdout 1-RMSE": 0.8390,
-        "Unseen Holdout AUC": 0.8980,
         "Status": "Scored (pBUapzRu)",
     },
     {
         "Stage": "Submission #2 (Ensemble_v2)",
-        "Feature Dim": 138,
+        "Features": "138 shift-inv",
+        "Val Cal-Hard 1-RMSE": 0.8364,
+        "Unseen Holdout 1-RMSE": 0.8886,
+        "Unseen Holdout AUC": 0.9334,
+        "+8dB/dec AUC": 0.8657,
+        "+8dB/dec zRMSE": 0.2023,
+        "+8dB/dec LogLoss": 1.1879,
         "Public 1-RMSE": 0.775017430,
         "Public Share RMSE": 0.224982569,
         "Public ROC AUC": 0.548377777,
-        "Unseen Holdout 1-RMSE": 0.8833,
-        "Unseen Holdout AUC": 0.9365,
         "Status": "Scored (Rank 508)",
     },
     {
-        "Stage": "Candidate v3 (Hard-Negative + SE-ResNet)",
-        "Feature Dim": 180,
+        "Stage": "Candidate v3 (Hard-Neg + SE-ResNet)",
+        "Features": "180 + CNN",
+        "Val Cal-Hard 1-RMSE": 0.8788,
+        "Unseen Holdout 1-RMSE": 0.8971,
+        "Unseen Holdout AUC": 0.9686,
+        "+8dB/dec AUC": 0.9477,
+        "+8dB/dec zRMSE": 0.2045,
+        "+8dB/dec LogLoss": 0.4625,
         "Public 1-RMSE": None,
         "Public Share RMSE": None,
         "Public ROC AUC": None,
-        "Unseen Holdout 1-RMSE": 0.8971,
-        "Unseen Holdout AUC": 0.9686,
         "Status": "Diagnostic Intermediate",
     },
     {
         "Stage": "Submission #3 (Ensemble_v4)",
-        "Feature Dim": 205,
+        "Features": "205 (71 R_* + CNN)",
+        "Val Cal-Hard 1-RMSE": 0.8933,
+        "Unseen Holdout 1-RMSE": 0.9219,
+        "Unseen Holdout AUC": 0.9737,
+        "+8dB/dec AUC": 0.9561,
+        "+8dB/dec zRMSE": 0.0929,
+        "+8dB/dec LogLoss": 0.3704,
         "Public 1-RMSE": 0.775235755,
         "Public Share RMSE": 0.224764244,
         "Public ROC AUC": 0.556555555,
-        "Unseen Holdout 1-RMSE": 0.9219,
-        "Unseen Holdout AUC": 0.9737,
-        "Status": "Scored Best 1-RMSE (ovjzdeb8)",
+        "Status": "Scored Best Single (ovjzdeb8)",
     },
     {
         "Stage": "Submission #4 (Ensemble_v5_Simple)",
-        "Feature Dim": 42,
+        "Features": "42 pure h(f)-inv",
+        "Val Cal-Hard 1-RMSE": 0.7843,
+        "Unseen Holdout 1-RMSE": 0.8382,
+        "Unseen Holdout AUC": 0.9194,
+        "+8dB/dec AUC": 0.9194,
+        "+8dB/dec zRMSE": 0.0787,
+        "+8dB/dec LogLoss": 0.3578,
         "Public 1-RMSE": 0.771209221,
         "Public Share RMSE": 0.228790778,
         "Public ROC AUC": 0.563911111,
-        "Unseen Holdout 1-RMSE": 0.8382,
-        "Unseen Holdout AUC": 0.9194,
-        "Status": "Scored Best Live AUC (MAKNM3KB)",
+        "Status": "Scored Parsimony (MAKNM3KB)",
     },
     {
-        "Stage": "Candidate #5 (Ensemble_v5_Blend 50/50)",
-        "Feature Dim": "42+205 (50/50)",
-        "Public 1-RMSE": None,
-        "Public Share RMSE": None,
-        "Public ROC AUC": None,
+        "Stage": "Submission #5 (Ensemble_v5_Blend 50/50)",
+        "Features": "50/50 v4 + v5",
+        "Val Cal-Hard 1-RMSE": 0.8542,
         "Unseen Holdout 1-RMSE": 0.8914,
         "Unseen Holdout AUC": 0.9629,
-        "Status": "Verified & Ready for Submission #5",
+        "+8dB/dec AUC": 0.9490,
+        "+8dB/dec zRMSE": 0.0807,
+        "+8dB/dec LogLoss": 0.3310,
+        "Public 1-RMSE": 0.787467941,
+        "Public Share RMSE": 0.212532058,
+        "Public ROC AUC": 0.572400000,
+        "Status": "Scored Best Overall (a6JJCya4)",
     },
 ])
 display(lb_history)
@@ -283,11 +306,11 @@ plt.show()
 
     md(
         """
-## 4. Modeling v5-Simple (`Submission #4`, `0.5639` Live AUC) & Zero-Tuning `v5-Blend` (`Candidate #5`)
+## 4. Modeling v5-Simple (`Submission #4`: `0.5639` AUC) & Zero-Tuning `v5-Blend` (`Submission #5`: `0.7875` / `0.5724`)
 
 Live Submission #4 (`MAKNM3KB`) proved the core parsimony hypothesis on unseen Zindi deployments: stripping modeling strictly down to **`42` purely $h(f)$-invariant features** (`R(t,f)` zone stats, smooth sigmoids, per-band median-centered `PCEN`, `RPCA` decomposition ratios) and stopping real `strict_hf_ship` negative suppression raised live diagnostic **ROC AUC to `0.563911111`** (`+0.0074` over `Ensemble_v4`). At the same time, subtracting per-band `q20` removed inter-band energy scale needed for broadband `share_added_vessel` magnitude (`0.22879` vs. `0.22476`).
 
-To unite both strengths with zero test-set tuning, **Modeling v5-Blend** (`scripts/modeling_v5_blend.py`) takes an unweighted `50/50` convex average of `Ensemble_v4` (`ovjzdeb8`) and `Ensemble_v5_Simple` (`MAKNM3KB`). Under severe `+8 dB/dec` holdout tilt stress, `Ensemble_v5_Blend` outperforms both parents on `1 - RMSE` (`0.8390`), `logloss` (`0.3310`), and `Brier` (`0.1026`), exploiting their `0.1672` `Test.csv` share RMS diversity. Below I inspect both `v5_simple` and `v5_blend` evaluations side by side.
+To unite both strengths with zero test-set tuning, **Modeling v5-Blend** (`scripts/modeling_v5_blend.py`) takes an unweighted `50/50` convex average of `Ensemble_v4` (`ovjzdeb8`) and `Ensemble_v5_Simple` (`MAKNM3KB`). Offline under severe `+8 dB/dec` holdout tilt stress, `Ensemble_v5_Blend` outperforms both parents on `1 - RMSE` (`0.8390`), `logloss` (`0.3310`), and `Brier` (`0.1026`). Live on Zindi (`Submission #5`, ID `a6JJCya4`), this `50/50` blend jumped to **`0.787467941` (`RMSE = 0.212532058`)** and **`0.572400000` ROC AUC** (`25,758 / 45,000`), matching the exact algebraic MSE diversity identity with `0.1583` implied public-split RMS difference (vs. `0.1672` across full `Test.csv`). Below I inspect both `v5_simple` and `v5_blend` offline and inference evaluations side by side.
 """
     )
 
@@ -382,7 +405,7 @@ for tag, rel in [
     ("candidate_v3_ensemble (Intermediate v3)", "submissions/candidate_v3_ensemble.csv"),
     ("candidate_v4_ensemble (Sub #3: 0.7752)", "submissions/candidate_v4_ensemble.csv"),
     ("candidate_v5_simple (Sub #4: 0.7712 / 0.5639 AUC)", "submissions/candidate_v5_simple.csv"),
-    ("candidate_v5_blend (Candidate #5: 50/50 v4+v5)", "submissions/candidate_v5_blend.csv"),
+    ("candidate_v5_blend (Sub #5: 0.7875 / 0.5724 AUC)", "submissions/candidate_v5_blend.csv"),
 ]:
     p = ROOT / rel
     df = pd.read_csv(p)
